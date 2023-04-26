@@ -25,6 +25,8 @@ Subproject III. Capital Interactive
 # capital_retirement.yaml
 # =============================================================================
 
+from thesis.src.lib.plot import plot_capital_retirement
+
 df = combine_capital_combined_archived()
 MAP = {
     # =========================================================================
@@ -57,7 +59,8 @@ df['PRM'] = df.iloc[:, 2].div(df.iloc[:, 5]).mul(100)
 # Fixed Assets, End-Period
 # =============================================================================
 df['CRU'] = df.iloc[:, 3].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
-df.iloc[:, (6, 1, 2, 8, 9, 4)].dropna(
-    axis=0).pipe(calculate_capital_aquisition)
+df.iloc[:, (6, 1, 2, 8, 9, 4)].dropna(axis=0).pipe(
+    calculate_capital_aquisition
+)
 df.iloc[:, (6, 1, 2, 9, 4)].dropna(axis=0).pipe(plot_capital_retirement)
 df.iloc[:, (6, 7, 8, 9, 4)].dropna(axis=0).pipe(plot_capital_retirement)
