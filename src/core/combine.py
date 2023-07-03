@@ -1,6 +1,6 @@
 import pandas as pd
+from core.constants import SERIES_IDS
 
-from capital_interactive.src.constants import SERIES_IDS
 from thesis.src.lib.constants import SERIES_IDS_LAB
 from thesis.src.lib.read import read_usa_frb_g17
 from thesis.src.lib.stockpile import stockpile_usa_bea

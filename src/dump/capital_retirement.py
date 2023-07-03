@@ -1,5 +1,5 @@
 
-from constants import DATA_CAPITAL_RETIREMENT
+from core.constants import DATA_CAPITAL_RETIREMENT
 from run_capital import run_capital_retirement
 
 DATA_CAPITAL_RETIREMENT

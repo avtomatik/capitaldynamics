@@ -9,7 +9,7 @@ Subproject III. Capital Interactive
 """
 
 
-from thesis.src.lib.plot import plot_capital_retirement
+from core.plot import plot_capital_retirement
 
 # =============================================================================
 # Alpha: Capital Retirement Ratio
