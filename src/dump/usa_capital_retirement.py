@@ -2,12 +2,14 @@ from itertools import product
 
 import pandas as pd
 from core.combine import combine_capital_combined_archived, combine_local
+from core.config import DATA_DIR
 from core.plot import plot_capital_retirement
 
 
 def cap_ret():
+    FILE_NAME = 'archive project CapitalAcquisitionsRetirement.csv'
     kwargs = {
-        'filepath_or_buffer': 'archive project CapitalAcquisitionsRetirement.csv',
+        'filepath_or_buffer': DATA_DIR.joinpath(FILE_NAME),
         'skiprows': range(1, 23)
     }
     # =========================================================================

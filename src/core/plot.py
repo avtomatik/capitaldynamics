@@ -2,15 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from core.tools import get_price_base_nr
-from pandas import DataFrame
 
 
-def plot_capital_acquisition(df: DataFrame) -> None:
+def plot_capital_acquisition(df: pd.DataFrame) -> None:
     """
     Interactive Shell for Processing Capital Acquisitions
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Nominal Investment
@@ -147,7 +146,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     _df = pd.concat(
         [
             _df,
-            DataFrame(_calculated, columns=['_calculated'])
+            pd.DataFrame(_calculated, columns=['_calculated'])
         ],
         axis=1)
     _df.set_index(_df.columns[0], inplace=True)
@@ -224,12 +223,12 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_capital_retirement(df: DataFrame) -> None:
+def plot_capital_retirement(df: pd.DataFrame) -> None:
     """
     Interactive Shell for Processing Capital Retirement
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Nominal Investment
@@ -378,8 +377,8 @@ def plot_capital_retirement(df: DataFrame) -> None:
     _df = pd.concat(
         [
             _df,
-            DataFrame(_value, columns=['_value']),
-            DataFrame(_ratio, columns=['_ratio'])
+            pd.DataFrame(_value, columns=['_value']),
+            pd.DataFrame(_ratio, columns=['_ratio'])
         ],
         axis=1
     )

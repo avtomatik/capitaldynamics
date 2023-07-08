@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
 
 
 def run_capital_retirement(period, investment, production, production_n, capital, labor):
@@ -34,11 +33,11 @@ def run_capital_retirement(period, investment, production, production_n, capital
     # =============================================================================
     # Convert List to Dataframe
     # =============================================================================
-    X01 = DataFrame(X01, columns=['X01'])
+    X01 = pd.DataFrame(X01, columns=['X01'])
     # =============================================================================
     # Convert List to Dataframe
     # =============================================================================
-    X02 = DataFrame(X02, columns=['X02'])
+    X02 = pd.DataFrame(X02, columns=['X02'])
     # =========================================================================
     # Number of Spans
     # =========================================================================
@@ -109,9 +108,9 @@ def run_capital_retirement(period, investment, production, production_n, capital
                         # Fixed Assets Retirement Ratio
                         X06.append(
                             (capital[i]-capital[1+i]+pi[j]*investment[i])/capital[1+i])
-        X05 = DataFrame(X05, columns=['X05'])  # Convert List to Dataframe
-        X06 = DataFrame(X06, columns=['X06'])  # Convert List to Dataframe
-        df = DataFrame(period, columns=['Period'])
+        X05 = pd.DataFrame(X05, columns=['X05'])  # Convert List to Dataframe
+        X06 = pd.DataFrame(X06, columns=['X06'])  # Convert List to Dataframe
+        df = pd.DataFrame(period, columns=['Period'])
         df = pd.concat(
             [df, X01, X02, X03, X04, X05, X06], axis=1)
         df.columns = ['Period', 'X01',
@@ -210,9 +209,9 @@ def run_capital_acquisitions(period, investment, production, production_n, produ
     X09 = production_m*labor[start]/(production_m[start]*labor)
     X10 = np.log(X09)  # Max: Log Labor Productivity
 
-    X05 = DataFrame(X05, columns=['X05'])  # Convert List to Dataframe
-    X06 = DataFrame(X06, columns=['X06'])  # Convert List to Dataframe
-    X10 = DataFrame(X10, columns=['X10'])  # Convert List to Dataframe
+    X05 = pd.DataFrame(X05, columns=['X05'])  # Convert List to Dataframe
+    X06 = pd.DataFrame(X06, columns=['X06'])  # Convert List to Dataframe
+    X10 = pd.DataFrame(X10, columns=['X10'])  # Convert List to Dataframe
     # =============================================================================
     # Calculate Dynamic Values
     # =============================================================================
@@ -264,8 +263,8 @@ def run_capital_acquisitions(period, investment, production, production_n, produ
                         # Estimate: GCF[-] or CA[+]
                         X11.append(capital[1+i]-capital[i] +
                                    pi[j]*investment[1+i])
-        X11 = DataFrame(X11, columns=['X11'])  # Convert List to Dataframe
-        df = DataFrame(period, columns=['Period'])
+        X11 = pd.DataFrame(X11, columns=['X11'])  # Convert List to Dataframe
+        df = pd.DataFrame(period, columns=['Period'])
         df = pd.concat(
             [df, X01, X02, X03, X04, X05, X06, X07, X08, X09, X10, X11], axis=1)
         df.columns = ['Period', 'X01', 'X02', 'X03',
@@ -364,8 +363,8 @@ def run_capital_retirement_x(period, investment, production, production_n, capit
     # Investment to Gross Domestic Product Ratio, (I/Y)/(I0/Y0)
     Y03 = investment*production[0]/(investment[0]*production)
     Y04 = production/capital  # Fixed Assets Turnover Ratio
-    Y01 = DataFrame(Y01, columns=['Y01'])  # Convert List to Dataframe
-    Y02 = DataFrame(Y02, columns=['Y02'])  # Convert List to Dataframe
+    Y01 = pd.DataFrame(Y01, columns=['Y01'])  # Convert List to Dataframe
+    Y02 = pd.DataFrame(Y02, columns=['Y02'])  # Convert List to Dataframe
     # =========================================================================
     # Number of Spans
     # =========================================================================
@@ -430,9 +429,9 @@ def run_capital_retirement_x(period, investment, production, production_n, capit
                         # Fixed Assets Retirement Ratio
                         Y06.append(
                             (capital[i]-capital[1+i]+pi[j]*investment[i])/capital[1+i])
-        Y05 = DataFrame(Y05, columns=['Y05'])  # Convert List to Dataframe
-        Y06 = DataFrame(Y06, columns=['Y06'])  # Convert List to Dataframe
-        df = DataFrame(period, columns=['Period'])
+        Y05 = pd.DataFrame(Y05, columns=['Y05'])  # Convert List to Dataframe
+        Y06 = pd.DataFrame(Y06, columns=['Y06'])  # Convert List to Dataframe
+        df = pd.DataFrame(period, columns=['Period'])
         df = pd.concat(
             [
                 df,
@@ -543,9 +542,9 @@ def calculate_capital_aquisition(_df):
     XHH = XHH.div(XHH[0])
     XII = XII.div(XII[0])
     XJJ = np.log(XII)  # Max: Log Labor Productivity
-    XEE = DataFrame(XEE, columns=['XEE'])  # Convert List to Dataframe
-    XFF = DataFrame(XFF, columns=['XFF'])  # Convert List to Dataframe
-    XJJ = DataFrame(XJJ, columns=['XJJ'])  # Convert List to Dataframe
+    XEE = pd.DataFrame(XEE, columns=['XEE'])  # Convert List to Dataframe
+    XFF = pd.DataFrame(XFF, columns=['XFF'])  # Convert List to Dataframe
+    XJJ = pd.DataFrame(XJJ, columns=['XJJ'])  # Convert List to Dataframe
     """Calculate Dynamic Values"""
     N = int(input('Define Number of Line Segments for Pi: '))  # Number of Spans
     if N >= 1:
@@ -597,8 +596,8 @@ def calculate_capital_aquisition(_df):
                         # Estimate: GCF[-] or CA[+]
                         XKK.append(
                             _df.iloc[1+_, 5]-_df.iloc[_, 5]+pi[j]*_df.iloc[1+_, 1])
-        XKK = DataFrame(XKK, columns=['XKK'])  # Convert List to Dataframe
-        df = DataFrame(_df.iloc[:, 0], columns=['Period'])
+        XKK = pd.DataFrame(XKK, columns=['XKK'])  # Convert List to Dataframe
+        df = pd.DataFrame(_df.iloc[:, 0], columns=['Period'])
         df = pd.concat(
             [df, XAA, XBB, XCC, XDD, XEE, XFF, XGG, XHH, XII, XJJ, XKK], axis=1)
         df.columns = ['Period', 'XAA', 'XBB', 'XCC',
@@ -686,8 +685,8 @@ def calculate_capital_retirement(_df):
     # Investment to Gross Domestic Product Ratio, (I/Y)/(I0/Y0)
     YCC = YCC.div(YCC[0])
     YDD = _df.iloc[:, 3].div(_df.iloc[:, 4])  # Fixed Assets Turnover Ratio
-    YAA = DataFrame(YAA, columns=['YAA'])  # Convert List to Dataframe
-    YBB = DataFrame(YBB, columns=['YBB'])  # Convert List to Dataframe
+    YAA = pd.DataFrame(YAA, columns=['YAA'])  # Convert List to Dataframe
+    YBB = pd.DataFrame(YBB, columns=['YBB'])  # Convert List to Dataframe
     # =========================================================================
     # Number of Spans
     # =========================================================================
@@ -751,9 +750,9 @@ def calculate_capital_retirement(_df):
                         # Fixed Assets Retirement Ratio
                         YFF.append(
                             (_df.iloc[_, 4]-_df.iloc[1+_, 4]+pi[j]*_df.iloc[_, 1])/_df.iloc[1+_, 4])
-        YEE = DataFrame(YEE, columns=['YEE'])  # Convert List to Dataframe
-        YFF = DataFrame(YFF, columns=['YFF'])  # Convert List to Dataframe
-        df = DataFrame(_df.iloc[:, 0], columns=['Period'])
+        YEE = pd.DataFrame(YEE, columns=['YEE'])  # Convert List to Dataframe
+        YFF = pd.DataFrame(YFF, columns=['YFF'])  # Convert List to Dataframe
+        df = pd.DataFrame(_df.iloc[:, 0], columns=['Period'])
         df = pd.concat(
             [df, YAA, YBB, YCC, YDD, YEE, YFF],
             axis=1,

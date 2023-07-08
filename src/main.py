@@ -5,7 +5,7 @@ Created on Sun Mar 26 02:56:02 2023
 
 @author: green-machine
 
-Subproject III. Capital Interactive
+Project III. Capital Interactive
 """
 
 

@@ -59,15 +59,15 @@ def plot_capital_acquisition(period, investment, manufacturing, manufacturing_n,
     # =========================================================================
     Y10 = np.log(Y09)
     # =========================================================================
-    # Convert List to DataFrame
+    # Convert List to pd.DataFrame
     # =========================================================================
     Y05 = pd.DataFrame(Y05, columns=['Y05'])
     # =========================================================================
-    # Convert List to DataFrame
+    # Convert List to pd.DataFrame
     # =========================================================================
     Y06 = pd.DataFrame(Y06, columns=['Y06'])
     # =========================================================================
-    # Convert List to DataFrame
+    # Convert List to pd.DataFrame
     # =========================================================================
     Y10 = pd.DataFrame(Y10, columns=['Y10'])
     # =========================================================================
@@ -131,7 +131,7 @@ def plot_capital_acquisition(period, investment, manufacturing, manufacturing_n,
                     _calculated.append(capital[1+_]-capital[_] +
                                        pi[j]*investment[1+_])
     # =========================================================================
-    # Convert List to DataFrame
+    # Convert List to pd.DataFrame
     # =========================================================================
     _calculated = pd.DataFrame(_calculated, columns=['Y11'])
     df = pd.DataFrame(period, columns=['period'])
@@ -229,11 +229,11 @@ def plot_capital_retirement(period, investment, manufacturing, manufacturing_n, 
     # =========================================================================
     Y04 = manufacturing/capital
     # =========================================================================
-    # Convert List to DataFrame
+    # Convert List to pd.DataFrame
     # =========================================================================
     Y01 = pd.DataFrame(Y01, columns=['Y01'])
     # =========================================================================
-    # Convert List to DataFrame
+    # Convert List to pd.DataFrame
     # =========================================================================
     Y02 = pd.DataFrame(Y02, columns=['Y02'])
     # =========================================================================
@@ -319,11 +319,11 @@ def plot_capital_retirement(period, investment, manufacturing, manufacturing_n, 
                     _ratio.append(
                         (capital[_]-capital[1+_]+pi[j]*investment[_])/capital[1+_])
     # =========================================================================
-    # Convert List to DataFrame
+    # Convert List to pd.DataFrame
     # =========================================================================
     _value = pd.DataFrame(_value, columns=['Y05'])
     # =========================================================================
-    # Convert List to DataFrame
+    # Convert List to pd.DataFrame
     # =========================================================================
     _ratio = pd.DataFrame(_ratio, columns=['Y06'])
     df = pd.DataFrame(period, columns=['period'])

@@ -1,13 +1,13 @@
-from pandas import DataFrame
+import pandas as pd
 
 
-def get_price_base_nr(df: DataFrame, columns: tuple[int] = (0, 1)) -> int:
+def get_price_base_nr(df: pd.DataFrame, columns: tuple[int] = (0, 1)) -> int:
     """
     Determine Base Year
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ======================== ===========================
         df.index                 Period
         ...                      ...
