@@ -1,0 +1,5 @@
+name: example_acquisition
+analysis_start: 2004
+gamma:
+  - {start: 2005, end: 2005, value: 1.0}
+  - {start: 2006, end: 2011, value: 0.8}

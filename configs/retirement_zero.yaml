@@ -1,0 +1,4 @@
+name: retirement_zero
+analysis_start: 1951
+gamma:
+  - {start: 1951, end: 2010, value: 0.0}

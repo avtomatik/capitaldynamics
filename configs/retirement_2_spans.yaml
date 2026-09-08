@@ -1,0 +1,5 @@
+name: retirement_2_spans
+analysis_start: 1951
+gamma:
+  - {start: 1951, end: 2002, value: 1.0}
+  - {start: 2003, end: 2010, value: 1.4}

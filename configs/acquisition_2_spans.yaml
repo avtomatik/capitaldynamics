@@ -1,0 +1,5 @@
+name: acquisition_2_spans
+analysis_start: 1967
+gamma:
+  - {start: 1968, end: 1981, value: 1.0}
+  - {start: 1982, end: 2011, value: 0.0}

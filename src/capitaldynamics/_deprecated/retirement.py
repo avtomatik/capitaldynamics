@@ -1,26 +1,25 @@
-from itertools import product
-
 import pandas as pd
-from core.combine import combine_capital_combined_archived, combine_local
-from core.config import DATA_DIR
-from core.plot import plot_capital_retirement
+
+from capitaldynamics._deprecated.data import combine_capital_combined_archived
+from capitaldynamics._deprecated.paths import DATA_DIR
+from capitaldynamics._deprecated.visualization import plot_capital_retirement
 
 
 def cap_ret():
-    FILE_NAME = 'archive project CapitalAcquisitionsRetirement.csv'
+    FILE_NAME = "archive project CapitalAcquisitionsRetirement.csv"
     kwargs = {
-        'filepath_or_buffer': DATA_DIR.joinpath(FILE_NAME),
-        'skiprows': range(1, 23)
+        "filepath_or_buffer": DATA_DIR / FILE_NAME,
+        "skiprows": range(1, 23),
     }
     # =========================================================================
     # Data Fetch: Run 'projectCapital.py'
     # =========================================================================
     df = pd.read_csv(**kwargs)
-    df['period'] = df['period'].astype(int)
+    df["period"] = df["period"].astype(int)
     # =========================================================================
     # capital_retirement.yaml
     # =========================================================================
-    T = df.iloc[:, 0]
+    df.iloc[:, 0]
     # =========================================================================
     # Investment
     # =========================================================================
@@ -56,7 +55,6 @@ def cap_ret():
     plot_capital_retirement(I, Y, YN, C, L)
 
 
-'''Project: Capital Retirement'''
 # =============================================================================
 # capital_retirement.yaml
 # =============================================================================
@@ -89,9 +87,6 @@ def main(df):
 
 STARTS = {22: 1951, 38: 1967}
 STOPS = {83: 2011}
-BOUNDS = tuple(product(STARTS, STOPS))
-
 df = combine_capital_combined_archived()
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(df, 38, 83)

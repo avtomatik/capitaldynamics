@@ -1,0 +1,5 @@
+name: example_retirement
+analysis_start: 2004
+gamma:
+  - {start: 2004, end: 2005, value: 1.0}
+  - {start: 2006, end: 2010, value: 0.8}

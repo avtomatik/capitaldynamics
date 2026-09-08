@@ -1,11 +1,5 @@
-from core.combine import combine_capital_combined_archived, combine_local
-from core.plot import plot_capital_acquisition
-from core.usa_capital_interactive import transform_call
-
-# =============================================================================
-# projectCapitalAcquisitions.py
-# =============================================================================
-'''Project: Capital Acquisitions'''
+from capitaldynamics._deprecated.data import combine_capital_combined_archived
+from capitaldynamics._deprecated.visualization import plot_capital_acquisition
 
 
 def transform_call(df):
