@@ -11,6 +11,7 @@ requires-python = ">=3.14"
 license = { file = "LICENSE.md" }
 authors = [{ name = "Alexander Mikhailov" }]
 dependencies = [
+    "duckdb>=1.5.5",
     "matplotlib>=3.11.1",
     "pandas>=3.0.5",
 ]

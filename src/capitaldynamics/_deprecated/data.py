@@ -1,7 +1,8 @@
 import pandas as pd
 
 from capitaldynamics._deprecated.sources import SERIES_IDS
-from capitaldynamics.data.sources import BEA_NIPA_URL, FED_CAPACITY_UTILIZATION_SERIES
+from capitaldynamics.data.sources import (BEA_NIPA_URL,
+                                          FED_CAPACITY_UTILIZATION_SERIES)
 
 
 def combine_capital_combined_archived() -> pd.DataFrame:
@@ -17,9 +18,14 @@ def combine_capital_combined_archived() -> pd.DataFrame:
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
-            stockpile_usa_bea(SERIES_IDS_LAB).pipe(
-                transform_mean, name="bea_labor_mfg"
-            ),
+            stockpile_usa_bea(
+                {
+                    "H4313C0": BEA_NIPA_URL,
+                    "J4313C0": BEA_NIPA_URL,
+                    "A4313C0": BEA_NIPA_URL,
+                    "N4313C0": BEA_NIPA_URL,
+                }
+            ).pipe(transform_mean, name="bea_labor_mfg"),
             # =================================================================
             # For Overall Labor Series, See: A4601C0, 1929--2020
             # =================================================================
@@ -34,9 +40,14 @@ def combine_local() -> pd.DataFrame:
     return pd.concat(
         [
             stockpile_usa_bea(SERIES_IDS),
-            stockpile_usa_bea(SERIES_IDS_LAB).pipe(
-                transform_mean, name="bea_labor_mfg"
-            ),
+            stockpile_usa_bea(
+                {
+                    "H4313C0": BEA_NIPA_URL,
+                    "J4313C0": BEA_NIPA_URL,
+                    "A4313C0": BEA_NIPA_URL,
+                    "N4313C0": BEA_NIPA_URL,
+                }
+            ).pipe(transform_mean, name="bea_labor_mfg"),
             read_usa_frb_g17()
             .loc[:, [FED_CAPACITY_UTILIZATION_SERIES]]
             .dropna(axis=0),
