@@ -26,8 +26,8 @@ def calculate_acquisition(
 ) -> AcquisitionResult:
     frame = dataset.enriched()
     start_pos = (
-        int(frame.index[frame["period"] == analysis_start][0])
-        if (frame["period"] == analysis_start).any()
+        int(frame.index[frame["year"] == analysis_start][0])
+        if (frame["year"] == analysis_start).any()
         else -1
     )
     if start_pos < 0:
@@ -42,7 +42,7 @@ def calculate_acquisition(
     # Historical Excel semantics: the estimate is labeled by the target year.
     # For target year t, use K_t - K_(t-1) + Gamma_t * I_t.
     for i in range(1, len(result)):
-        target_period = int(result.loc[i, "period"])
+        target_period = int(result.loc[i, "year"])
         try:
             gamma_value = gamma.for_period(target_period)
         except KeyError as exc:

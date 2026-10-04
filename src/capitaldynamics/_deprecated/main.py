@@ -1,4 +1,8 @@
-from capitaldynamics._deprecated.data import combine_capital_combined_archived
+import duckdb
+
+from capitaldynamics._deprecated.paths import WAREHOUSE
+from capitaldynamics._deprecated.visualization import plot_capital_retirement
+from capitaldynamics._retired.visualization import plot_calculate_capital_aquisition
 
 # =============================================================================
 # Alpha: Capital Retirement Ratio
@@ -18,40 +22,47 @@ from capitaldynamics._deprecated.data import combine_capital_combined_archived
 # =============================================================================
 
 
-df = combine_capital_combined_archived()
-MAP = {
-    # =========================================================================
-    # Nominal Product
-    # =========================================================================
-    "A191RC": "nominal_gdp",
-    # =========================================================================
-    # Real Product
-    # =========================================================================
-    "A191RX": "real_gdp",
-    # =========================================================================
-    # Labor
-    # =========================================================================
-    "bea_labor_mfg": "labor_overall",
-}
-df.columns = MAP.values()
-# =============================================================================
-# Nominal Investment
-# =============================================================================
-df["IRU"] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
-# =============================================================================
-# Maximum Nominal Product
-# =============================================================================
-df["PNM"] = df.iloc[:, 1].div(df.iloc[:, 5]).mul(100)
-# =============================================================================
-# Maximum Real Product
-# =============================================================================
-df["PRM"] = df.iloc[:, 2].div(df.iloc[:, 5]).mul(100)
-# =============================================================================
-# Fixed Assets, End-Period
-# =============================================================================
-df["CRU"] = df.iloc[:, 3].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
-df.iloc[:, (6, 1, 2, 8, 9, 4)].dropna(axis=0).pipe(
-    calculate_capital_aquisition
-)
-df.iloc[:, (6, 1, 2, 9, 4)].dropna(axis=0).pipe(plot_capital_retirement)
-df.iloc[:, (6, 7, 8, 9, 4)].dropna(axis=0).pipe(plot_capital_retirement)
+with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
+    df = con.sql(
+        """
+        SELECT *
+        FROM marts.capital_dynamics_archived
+        ORDER BY year
+        """
+    ).df()
+
+df = df.set_index("year")
+
+df.loc[
+    :,
+    [
+        "real_investment",
+        "nominal_gdp",
+        "real_gdp",
+        "full_capacity_real_gdp",
+        "real_fixed_assets",
+        "manufacturing_labor",
+    ],
+].pipe(plot_calculate_capital_aquisition)
+
+df.loc[
+    :,
+    [
+        "real_investment",
+        "nominal_gdp",
+        "real_gdp",
+        "real_fixed_assets",
+        "manufacturing_labor",
+    ],
+].pipe(plot_capital_retirement)
+
+df.loc[
+    :,
+    [
+        "real_investment",
+        "full_capacity_nominal_gdp",
+        "full_capacity_real_gdp",
+        "real_fixed_assets",
+        "manufacturing_labor",
+    ],
+].pipe(plot_capital_retirement)

@@ -1,13 +1,14 @@
 import pandas as pd
-from capital_analysis.domain.models import CapitalDataset
-from capital_analysis.domain.retirement import calculate_retirement
-from capital_analysis.domain.schedule import GammaSchedule
+
+from capitaldynamics.domain.models import CapitalDataset
+from capitaldynamics.domain.retirement import calculate_retirement
+from capitaldynamics.domain.schedule import GammaSchedule
 
 
 def test_retirement_formula_matches_historical_python():
     frame = pd.DataFrame(
         {
-            "period": [2004, 2005, 2006],
+            "year": [2004, 2005, 2006],
             "nominal_gdp": [100.0, 100.0, 100.0],
             "real_gdp": [100.0, 100.0, 100.0],
             "nominal_investment": [10.0, 20.0, 30.0],

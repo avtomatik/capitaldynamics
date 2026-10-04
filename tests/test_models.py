@@ -5,7 +5,7 @@ from capital_analysis.domain.models import CapitalDataset
 def sample_frame():
     return pd.DataFrame(
         {
-            "period": [2004, 2005, 2006],
+            "year": [2004, 2005, 2006],
             "nominal_gdp": [90.0, 100.0, 110.0],
             "real_gdp": [90.0, 100.0, 110.0],
             "nominal_investment": [10.0, 11.0, 12.0],

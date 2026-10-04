@@ -25,7 +25,7 @@ def calculate_retirement(
     dataset: CapitalDataset, analysis_start: int, gamma: GammaSchedule
 ) -> RetirementResult:
     frame = dataset.enriched()
-    matches = frame.index[frame["period"] == analysis_start]
+    matches = frame.index[frame["year"] == analysis_start]
     if len(matches) == 0:
         raise ValueError(
             f"analysis_start {analysis_start} is not present in the dataset"
@@ -34,9 +34,9 @@ def calculate_retirement(
     result = static_indicators(frame, start=0, include_maximum=False)
     result["retirement_value"] = np.nan
     result["retirement_ratio"] = np.nan
-    for i, period in enumerate(result["period"].iloc[:-1]):
+    for i, year in enumerate(result["year"].iloc[:-1]):
         try:
-            gamma_value = gamma.for_period(int(period))
+            gamma_value = gamma.for_period(int(year))
         except KeyError as exc:
             raise ValueError(str(exc)) from exc
         retirement_value = (

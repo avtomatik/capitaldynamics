@@ -7,7 +7,7 @@ from ..domain.acquisition import AcquisitionResult
 
 def figures(result: AcquisitionResult) -> list[plt.Figure]:
     d = result.data
-    years = d["period"]
+    years = d["year"]
     figs = []
 
     fig, ax = plt.subplots()

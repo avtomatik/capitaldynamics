@@ -41,7 +41,7 @@ The analysis accepts a canonical table containing:
 
 | Column | Meaning |
 |---|---|
-| `period` | Year |
+| `year` | Year |
 | `nominal_gdp` | Nominal GDP |
 | `real_gdp` | Real GDP |
 | `nominal_investment` | Gross private domestic investment |

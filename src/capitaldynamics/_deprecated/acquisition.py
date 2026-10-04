@@ -1,34 +1,37 @@
-from capitaldynamics._deprecated.data import combine_capital_combined_archived
+import duckdb
+
+from capitaldynamics._deprecated.paths import WAREHOUSE
 from capitaldynamics._deprecated.visualization import plot_capital_acquisition
 
+###############################################################################
+# BASE_YEAR = 1967
+###############################################################################
+with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
+    # df = con.sql(
+    #     """
+    #     SELECT *
+    #     FROM marts.local_dataset
+    #     ORDER BY year
+    #     """
+    # ).df()
+    df = con.sql(
+        """
+        SELECT *
+        FROM marts.capital_dynamics_archived
+        ORDER BY year
+        """
+    ).df()
 
-def transform_call(df):
-    # df = combine_local().pipe(transform_local)
-    _df = df.dropna()
-    # =========================================================================
-    # Investment
-    # =========================================================================
-    I = _df.iloc[:, 1].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
-    # =========================================================================
-    # Product
-    # =========================================================================
-    Y = _df.iloc[:, 3]
-    YN = _df.iloc[:, 2]
-    # =========================================================================
-    # Max: Product
-    # =========================================================================
-    YM = _df.iloc[:, 3].div(_df.iloc[:, 4]).mul(100)
-    # =========================================================================
-    # Fixed Assets, End-Period, Not Adjusted
-    # =========================================================================
-    C = _df.iloc[:, 6].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
-    L = _df.iloc[:, 7]
-    plot_capital_acquisition(I, Y, YN, YM, C, L)
+    df = df.set_index("year")
 
-
-def cap_acq():
-    # =========================================================================
-    # 1967
-    # =========================================================================
-    # start = 38
-    combine_capital_combined_archived().pipe(transform_call, start=38)
+    df.loc[
+        :,
+        [
+            "real_investment",
+            "real_gdp",
+            "nominal_gdp",
+            "full_capacity_real_gdp",
+            "real_fixed_assets",
+            "manufacturing_labor",
+        ],
+    ].pipe(plot_capital_acquisition)

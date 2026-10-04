@@ -7,7 +7,7 @@ from capital_analysis.domain.schedule import GammaSchedule
 def test_acquisition_formula_matches_historical_vba():
     frame = pd.DataFrame(
         {
-            "period": [2004, 2005, 2006],
+            "year": [2004, 2005, 2006],
             "nominal_gdp": [100.0, 100.0, 100.0],
             "real_gdp": [100.0, 100.0, 100.0],
             "nominal_investment": [10.0, 20.0, 30.0],

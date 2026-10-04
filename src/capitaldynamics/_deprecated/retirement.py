@@ -1,92 +1,63 @@
-import pandas as pd
+import duckdb
 
-from capitaldynamics._deprecated.data import combine_capital_combined_archived
-from capitaldynamics._deprecated.paths import DATA_DIR
+from capitaldynamics._deprecated.paths import WAREHOUSE
 from capitaldynamics._deprecated.visualization import plot_capital_retirement
+from capitaldynamics._retired.visualization import run_capital_retirement
 
+with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
+    ###########################################################################
+    # BASE_YEAR = 1967 | 1951
+    ###########################################################################
+    df = con.sql(
+        """
+        SELECT *
+        FROM marts.capital_dynamics_archived
+        ORDER BY year
+        """
+    ).df()
 
-def cap_ret():
-    FILE_NAME = "archive project CapitalAcquisitionsRetirement.csv"
-    kwargs = {
-        "filepath_or_buffer": DATA_DIR / FILE_NAME,
-        "skiprows": range(1, 23),
-    }
-    # =========================================================================
-    # Data Fetch: Run 'projectCapital.py'
-    # =========================================================================
-    df = pd.read_csv(**kwargs)
-    df["period"] = df["period"].astype(int)
-    # =========================================================================
-    # capital_retirement.yaml
-    # =========================================================================
-    df.iloc[:, 0]
-    # =========================================================================
-    # Investment
-    # =========================================================================
-    I = df.iloc[:, 1].mul(df.iloc[:, 3]).div(df.iloc[:, 2])
-    # =========================================================================
-    # Product
-    # =========================================================================
-    Y = df.iloc[:, 3]
-    YN = df.iloc[:, 2]
-    # =========================================================================
-    # Max: Product
-    # =========================================================================
-    # YM = df.iloc[:, 3].div(df.iloc[:, 4]).div(100)
-    # Fixed Assets, End-Period, Not Adjusted
-    C = df.iloc[:, 6].mul(df.iloc[:, 3]).div(df.iloc[:, 2])
-    L = df.iloc[:, 7]
-    # =========================================================================
-    # C = df.iloc[:, 5].mul(df.iloc[:, 3]).div(df.iloc[:, 2])
-    # =========================================================================
-    # =========================================================================
-    # L = df.iloc[:, 8]
-    # =========================================================================
-    # =========================================================================
-    # Replaced with
-    # =========================================================================
-    # =========================================================================
-    # C = df.iloc[:, 6].mul(df.iloc[:, 3]).div(df.iloc[:, 2])
-    # =========================================================================
-    # =========================================================================
-    # L = df.iloc[:, 7]
-    # =========================================================================
+df = df.set_index("year")
 
-    plot_capital_retirement(I, Y, YN, C, L)
+df.loc[
+    :,
+    [
+        "real_investment",
+        "real_gdp",
+        "nominal_gdp",
+        "real_fixed_assets",
+        "manufacturing_labor",
+    ],
+].pipe(plot_capital_retirement)
 
+df.loc[
+    :,
+    [
+        "real_investment",
+        "real_gdp",
+        "nominal_gdp",
+        "real_fixed_assets",
+        "manufacturing_labor",
+    ],
+].pipe(run_capital_retirement)
 
-# =============================================================================
-# capital_retirement.yaml
-# =============================================================================
+df.loc[
+    :,
+    [
+        "real_investment",
+        "full_capacity_real_gdp",
+        "nominal_gdp",
+        "real_fixed_assets",
+        "manufacturing_labor",
+    ],
+].pipe(plot_capital_retirement)
 
-
-def main(df):
-    # df = combine_local().pipe(transform_local)
-    _df = df.dropna()
-    # =========================================================================
-    # Investment
-    # =========================================================================
-    I = _df.iloc[:, 1].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
-    # =========================================================================
-    # Product
-    # =========================================================================
-    Y = _df.iloc[:, 3]
-    YN = _df.iloc[:, 2]
-    # =========================================================================
-    # Max: Product
-    # =========================================================================
-    YM = _df.iloc[:, 3].mul(100).div(_df.iloc[:, 4])
-    # =========================================================================
-    # Capital, End-Period, Not Adjusted
-    # =========================================================================
-    C = _df.iloc[:, 6].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
-    L = _df.iloc[:, 7]
-    plot_capital_retirement(I, Y, YN, C, L)
-    plot_capital_retirement(I, YM, YN, C, L)
-
-
-STARTS = {22: 1951, 38: 1967}
-STOPS = {83: 2011}
-df = combine_capital_combined_archived()
-if __name__ == "__main__":
-    main(df, 38, 83)
+df.loc[
+    :,
+    [
+        "real_investment",
+        "full_capacity_real_gdp",
+        "nominal_gdp",
+        "real_fixed_assets",
+        "manufacturing_labor",
+    ],
+].pipe(run_capital_retirement)

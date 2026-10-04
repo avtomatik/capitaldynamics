@@ -1,4 +1,4 @@
-period,nominal_gdp,real_gdp,nominal_investment,nominal_capital,labor,capacity_utilization
+year,nominal_gdp,real_gdp,nominal_investment,nominal_capital,labor,capacity_utilization
 2004,11853.3,12246.9,1968.6,35010.4,14024,0.779459
 2005,12623.0,12623.0,2172.3,38542.4,13954,0.797964
 2006,13377.2,12958.5,2327.1,41651.6,13897,0.801648

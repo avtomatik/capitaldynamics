@@ -7,7 +7,7 @@ from ..domain.retirement import RetirementResult
 
 def figures(result: RetirementResult) -> list[plt.Figure]:
     d = result.data
-    years = d["period"]
+    years = d["year"]
     figs = []
     specs = [
         ("Product", years, d["real_gdp"], "Period", "Product"),

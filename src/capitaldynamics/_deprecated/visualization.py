@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from capitaldynamics._deprecated.data import get_price_base_nr
+from capitaldynamics._deprecated.prices import get_price_base_nr
 
 
 def plot_capital_acquisition(df: pd.DataFrame) -> None:
@@ -26,7 +26,7 @@ def plot_capital_acquisition(df: pd.DataFrame) -> None:
         Draws matplotlib.pyplot Plots.
     """
     _df = df.reset_index(level=0).copy()
-    _df.columns = ("period", *_df.columns[1:])
+    _df.columns = ("year", *_df.columns[1:])
     # =========================================================================
     # Basic Year
     # =========================================================================
@@ -55,11 +55,11 @@ def plot_capital_acquisition(df: pd.DataFrame) -> None:
     # =========================================================================
     # Log Labor Capital Intensity, LN((K/L)/(K_0/L_0))
     # =========================================================================
-    _df[f"{_df.columns[-2]}_log_bas"] = np.log(_df.iloc[:, -2].astype(float))
+    _df[f"{_df.columns[-2]}_log_bas"] = np.log(_df.iloc[:, -2])
     # =========================================================================
     # Log Labor Productivity, LN((Y/L)/(Y_0/L_0))
     # =========================================================================
-    _df[f"{_df.columns[-2]}_log_bas"] = np.log(_df.iloc[:, -2].astype(float))
+    _df[f"{_df.columns[-2]}_log_bas"] = np.log(_df.iloc[:, -2])
     # =========================================================================
     # Max: Fixed Assets Turnover Ratio
     # =========================================================================
@@ -76,7 +76,7 @@ def plot_capital_acquisition(df: pd.DataFrame) -> None:
     # =========================================================================
     # Max: Log Labor Productivity
     # =========================================================================
-    _df[f"{_df.columns[-1]}_log_bas"] = np.log(_df.iloc[:, -1].astype(float))
+    _df[f"{_df.columns[-1]}_log_bas"] = np.log(_df.iloc[:, -1])
     # =========================================================================
     # Calculate Dynamic Values
     # =========================================================================
@@ -89,7 +89,8 @@ def plot_capital_acquisition(df: pd.DataFrame) -> None:
     # =========================================================================
     # Pi & Pi Switch Points
     # =========================================================================
-    pi, _knots = [], [0]
+    pi = []
+    _knots = [0]
     _ = 0
     if N == 1:
         _knots.append(_df.index[-1])
@@ -272,7 +273,7 @@ def plot_capital_retirement(df: pd.DataFrame) -> None:
         Draws matplotlib.pyplot Plots.
     """
     _df = df.reset_index(level=0).copy()
-    _df.columns = ("period", *_df.columns[1:])
+    _df.columns = ("year", *_df.columns[1:])
     # =========================================================================
     # Define Basic Year for Deflator
     # =========================================================================
@@ -303,11 +304,11 @@ def plot_capital_retirement(df: pd.DataFrame) -> None:
     # =========================================================================
     # Log Labor Capital Intensity, LN((K/L)/(K_0/L_0))
     # =========================================================================
-    _df.iloc[:, -3] = np.log(_df.iloc[:, -3].astype(float))
+    _df.iloc[:, -3] = np.log(_df.iloc[:, -3])
     # =========================================================================
     # Log Labor Productivity, LN((Y/L)/(Y_0/L_0))
     # =========================================================================
-    _df.iloc[:, -2] = np.log(_df.iloc[:, -2].astype(float))
+    _df.iloc[:, -2] = np.log(_df.iloc[:, -2])
     # =========================================================================
     # Fixed Assets Turnover Ratio
     # =========================================================================
@@ -321,7 +322,8 @@ def plot_capital_retirement(df: pd.DataFrame) -> None:
     # =========================================================================
     # Pi & Pi Switch Points
     # =========================================================================
-    pi, _knots = [], [0]
+    pi = []
+    _knots = [0]
     _ = 0
     if N == 1:
         _knots.append(_df.index[-1])
