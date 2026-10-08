@@ -1,0 +1,32 @@
+# Canonical mapping from semantic model inputs to raw source series.
+# Keep source codes here rather than embedding them in SQL or model code.
+
+series:
+  nominal_investment: A006RC1
+  nominal_gdp: A191RC1
+  real_gdp: A191RX1
+
+  # Historical variants found during repository archaeology:
+  #   K160021  -> used by the archived Python mart
+  #   K160491  -> present in the original Excel experiment
+  #   k3n31gd1es000 -> used by later local-dataset experiments
+  # Select one explicitly for a reproducible run.
+  capital: K160021
+
+  capacity_utilization: CAPUTL.B50001.A
+  total_labor: A4601C0
+  manufacturing_labor_components:
+    - H4313C0
+    - J4313C0
+    - A4313C0
+    - N4313C0
+
+window:
+  start_year: null
+  end_year: null
+
+# The canonical raw artifact is long-form Parquet:
+#   year | series_code | value
+# A DuckDB file is an optional disposable cache, not the source of truth.
+raw_path: data/raw/observations.parquet
+semantic_output_path: data/derived/capital_dataset.parquet

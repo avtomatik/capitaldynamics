@@ -30,6 +30,9 @@ def plot_capital_acquisition(df: pd.DataFrame) -> None:
     # =========================================================================
     # Basic Year
     # =========================================================================
+    # =========================================================================
+    # Define Basic Year for Deflator
+    # =========================================================================
     _b = _df.pipe(get_price_base_nr, columns=(2, 3))
     _df.drop(_df.columns[-1], axis=1, inplace=True)
     # =========================================================================
@@ -181,12 +184,9 @@ def plot_capital_acquisition(df: pd.DataFrame) -> None:
         [_df, pd.DataFrame(_calculated, columns=["_calculated"])], axis=1
     )
     _df.set_index(_df.columns[0], inplace=True)
-    # =========================================================================
-    # {
-    #     '-': 'Gross Capital Formation',
-    #     '+': 'Capital Acquisitions'
-    # }
-    # =========================================================================
+
+    # {"-": "Gross Capital Formation", "+": "Capital Acquisitions"}
+
     for _ in range(N):
         if 1 + _ == N:
             print(
@@ -226,7 +226,7 @@ def plot_capital_acquisition(df: pd.DataFrame) -> None:
             _b, *df.index[[0, -1]]
         )
     )
-    plt.xlabel("Period")
+    plt.xlabel("year")
     plt.ylabel(f"Fixed Assets Turnover ($\\lambda$), {_b}=100")
     plt.grid()
     plt.figure(4)
@@ -237,7 +237,7 @@ def plot_capital_acquisition(df: pd.DataFrame) -> None:
             _b, *df.index[[0, -1]]
         )
     )
-    plt.xlabel("Period")
+    plt.xlabel("year")
     plt.ylabel(f"Investment to Gross Domestic Product Ratio, {_b}=100")
     plt.grid()
     plt.figure(5)
@@ -247,7 +247,7 @@ def plot_capital_acquisition(df: pd.DataFrame) -> None:
             _b, *df.index[[0, -1]]
         )
     )
-    plt.xlabel("Period")
+    plt.xlabel("year")
     plt.ylabel(f"GCF or CA, {_b}=100")
     plt.grid()
     plt.show()
@@ -275,10 +275,10 @@ def plot_capital_retirement(df: pd.DataFrame) -> None:
     _df = df.reset_index(level=0).copy()
     _df.columns = ("year", *_df.columns[1:])
     # =========================================================================
-    # Define Basic Year for Deflator
-    # =========================================================================
-    # =========================================================================
     # Basic Year
+    # =========================================================================
+    # =========================================================================
+    # Define Basic Year for Deflator
     # =========================================================================
     _b = _df.pipe(get_price_base_nr, columns=(2, 3))
     _df.drop(_df.columns[-1], axis=1, inplace=True)
@@ -462,13 +462,13 @@ def plot_capital_retirement(df: pd.DataFrame) -> None:
         )
     plt.figure(1)
     plt.title("Product, {}=100, {}$-${}".format(_b, *df.index[[0, -1]]))
-    plt.xlabel("Period")
+    plt.xlabel("year")
     plt.ylabel(f"Product, {_b}=100")
     plt.plot(_df.iloc[:, 2])
     plt.grid()
     plt.figure(2)
     plt.title("Capital, {}=100, {}$-${}".format(_b, *df.index[[0, -1]]))
-    plt.xlabel("Period")
+    plt.xlabel("year")
     plt.ylabel(f"Capital, {_b}=100")
     plt.plot(_df.iloc[:, 3])
     plt.grid()
@@ -478,7 +478,7 @@ def plot_capital_retirement(df: pd.DataFrame) -> None:
             _b, *df.index[[0, -1]]
         )
     )
-    plt.xlabel("Period")
+    plt.xlabel("year")
     plt.ylabel(f"Fixed Assets Turnover ($\\lambda$), {_b}=100")
     plt.plot(_df.iloc[:, 2].div(_df.iloc[:, 3]))
     plt.grid()
@@ -488,7 +488,7 @@ def plot_capital_retirement(df: pd.DataFrame) -> None:
             _b, *df.index[[0, -1]]
         )
     )
-    plt.xlabel("Period")
+    plt.xlabel("year")
     plt.ylabel(f"Investment to Gross Domestic Product Ratio, {_b}=100")
     plt.plot(_df.iloc[:, 7])
     plt.grid()
@@ -498,7 +498,7 @@ def plot_capital_retirement(df: pd.DataFrame) -> None:
             _b, *df.index[[0, -1]]
         )
     )
-    plt.xlabel("Period")
+    plt.xlabel("year")
     plt.ylabel(f"$\\alpha(t)$, {_b}=100")
     plt.plot(_df.iloc[:, 9])
     plt.grid()

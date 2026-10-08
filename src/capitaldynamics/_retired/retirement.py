@@ -4,18 +4,20 @@ import pandas as pd
 
 
 def plot_capital_retirement(
-    period, investment, manufacturing, manufacturing_n, capital, labor
+    period,
+    investment,
+    real_production,
+    nominal_production,
+    fixed_assets,
+    labor,
 ):
     # =========================================================================
     # Define Basic Year for Deflator
     # =========================================================================
-    _ = len(period) - 1
-    while abs(manufacturing_n[_] - manufacturing[_]) > 1:
-        _ -= 1
-        # =========================================================================
-        # Basic Year
-        # =========================================================================
-        year_base = _
+    i = len(period) - 1
+    while abs(nominal_production[i] - real_production[i]) > 1:
+        i -= 1
+        base_year = i
 
     # =========================================================================
     # Calculate Static Values
@@ -23,26 +25,20 @@ def plot_capital_retirement(
     # =========================================================================
     # Log Labor Capital Intensity, LN((K/L)/(K0/L0))
     # =========================================================================
-    Y01 = np.log(capital * labor[0] / (capital[0] * labor))
+    Y01 = np.log(fixed_assets * labor[0] / (fixed_assets[0] * labor))
     # =========================================================================
     # Log Labor Productivity, LN((Y/L)/(Y0/L0))
     # =========================================================================
-    Y02 = np.log(manufacturing * labor[0] / (manufacturing[0] * labor))
+    Y02 = np.log(real_production * labor[0] / (real_production[0] * labor))
     # =========================================================================
     # Investment to Gross Domestic Product Ratio, (I/Y)/(I0/Y0)
     # =========================================================================
-    Y03 = investment * manufacturing[0] / (investment[0] * manufacturing)
+    Y03 = investment * real_production[0] / (investment[0] * real_production)
     # =========================================================================
     # Fixed Assets Turnover Ratio
     # =========================================================================
-    Y04 = manufacturing / capital
-    # =========================================================================
-    # Convert List to pd.DataFrame
-    # =========================================================================
+    Y04 = real_production / fixed_assets
     Y01 = pd.DataFrame(Y01, columns=["Y01"])
-    # =========================================================================
-    # Convert List to pd.DataFrame
-    # =========================================================================
     Y02 = pd.DataFrame(Y02, columns=["Y02"])
     # =========================================================================
     # Number of Spans
@@ -116,13 +112,15 @@ def plot_capital_retirement(
             # =========================================================================
             # Fixed Assets Retirement Value
             # =========================================================================
-            _value.append(capital[_] - capital[1 + _] + pi[j] * investment[_])
+            _value.append(
+                fixed_assets[_] - fixed_assets[1 + _] + pi[j] * investment[_]
+            )
             # =========================================================================
             # Fixed Assets Retirement Ratio
             # =========================================================================
             _ratio.append(
-                (capital[_] - capital[1 + _] + pi[j] * investment[_])
-                / capital[1 + _]
+                (fixed_assets[_] - fixed_assets[1 + _] + pi[j] * investment[_])
+                / fixed_assets[1 + _]
             )
     else:
         for j in range(N):
@@ -132,14 +130,20 @@ def plot_capital_retirement(
                     # Fixed Assets Retirement Value
                     # =========================================================================
                     _value.append(
-                        capital[_] - capital[1 + _] + pi[j] * investment[_]
+                        fixed_assets[_]
+                        - fixed_assets[1 + _]
+                        + pi[j] * investment[_]
                     )
                     # =========================================================================
                     # Fixed Assets Retirement Ratio
                     # =========================================================================
                     _ratio.append(
-                        (capital[_] - capital[1 + _] + pi[j] * investment[_])
-                        / capital[1 + _]
+                        (
+                            fixed_assets[_]
+                            - fixed_assets[1 + _]
+                            + pi[j] * investment[_]
+                        )
+                        / fixed_assets[1 + _]
                     )
             else:
                 for _ in range(_knots[j], _knots[1 + j]):
@@ -147,26 +151,26 @@ def plot_capital_retirement(
                     # Fixed Assets Retirement Value
                     # =========================================================================
                     _value.append(
-                        capital[_] - capital[1 + _] + pi[j] * investment[_]
+                        fixed_assets[_]
+                        - fixed_assets[1 + _]
+                        + pi[j] * investment[_]
                     )
                     # =========================================================================
                     # Fixed Assets Retirement Ratio
                     # =========================================================================
                     _ratio.append(
-                        (capital[_] - capital[1 + _] + pi[j] * investment[_])
-                        / capital[1 + _]
+                        (
+                            fixed_assets[_]
+                            - fixed_assets[1 + _]
+                            + pi[j] * investment[_]
+                        )
+                        / fixed_assets[1 + _]
                     )
-    # =========================================================================
-    # Convert List to pd.DataFrame
-    # =========================================================================
     _value = pd.DataFrame(_value, columns=["Y05"])
-    # =========================================================================
-    # Convert List to pd.DataFrame
-    # =========================================================================
     _ratio = pd.DataFrame(_ratio, columns=["Y06"])
-    df = pd.DataFrame(period, columns=["period"])
+    df = pd.DataFrame(period, columns=["year"])
     df = pd.concat([df, Y01, Y02, Y03, Y04, _value, _ratio], axis=1)
-    df.columns = ("period", "Y01", "Y02", "Y03", "Y04", "Y05", "Y06")
+    df.columns = ("year", "Y01", "Y02", "Y03", "Y04", "Y05", "Y06")
     df["Y07"] = df["Y06"] - df["Y06"].mean()
     df["Y07"] = df["Y07"].abs()
     df["Y08"] = df["Y06"].diff()
@@ -184,79 +188,78 @@ def plot_capital_retirement(
     plt.figure(1)
     plt.title(
         "Product, %d=100, {}$-${}".format(
-            period[year_base],
+            period[base_year],
             period[0],
         )
     )
-    plt.xlabel("Period")
-    plt.ylabel(f"Product, {period[year_base]}=100")
-    plt.plot(manufacturing)
+    plt.xlabel("year")
+    plt.ylabel(f"Product, {period[base_year]}=100")
+    plt.plot(real_production)
     plt.grid()
     plt.figure(2)
     plt.title(
         "Capital, %d=100, {}$-${}".format(
-            period[year_base],
+            period[base_year],
             period[0],
         )
     )
-    plt.xlabel("Period")
-    plt.ylabel(f"Capital, {period[year_base]}=100")
-    plt.plot(capital)
+    plt.xlabel("year")
+    plt.ylabel(f"Capital, {period[base_year]}=100")
+    plt.plot(fixed_assets)
     plt.grid()
     plt.figure(3)
     plt.title(
         "Fixed Assets Turnover, %d=100, {}$-${}".format(
-            period[year_base],
+            period[base_year],
             period[0],
         )
     )
-    plt.xlabel("Period")
-    plt.ylabel(f"Fixed Assets Turnover, {period[year_base]}=100")
-    plt.plot(manufacturing / capital)
+    plt.xlabel("year")
+    plt.ylabel(f"Fixed Assets Turnover, {period[base_year]}=100")
+    plt.plot(real_production / fixed_assets)
     plt.grid()
     plt.figure(4)
     plt.title(
         "Investment to GDP Ratio, %d=100, {}$-${}".format(
-            period[year_base],
+            period[base_year],
             period[0],
         )
     )
-    plt.xlabel("Period")
-    plt.ylabel(f"Investment to GDP Ratio, {period[year_base]}=100")
+    plt.xlabel("year")
+    plt.ylabel(f"Investment to GDP Ratio, {period[base_year]}=100")
     plt.plot(Y03)
     plt.grid()
     plt.figure(5)
     plt.title(
         "$\\mu(t)$, Fixed Assets Retirement Ratio, %d=100, {}$-${}".format(
-            period[year_base],
+            period[base_year],
             period[0],
         )
     )
-    plt.xlabel("Period")
-    plt.ylabel(f"$\\mu(t)$, {period[year_base]}=100")
+    plt.xlabel("year")
+    plt.ylabel(f"$\\mu(t)$, {period[base_year]}=100")
     plt.plot(_ratio)
     plt.grid()
     plt.figure(6)
     plt.title(
         "Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, %d=100, {}$-${}".format(
-            period[year_base],
+            period[base_year],
             period[0],
         )
     )
-    plt.xlabel(f"$\\mu(t)$, {period[year_base]}=100")
-    plt.ylabel(f"Fixed Assets Retirement Value, {period[year_base]}=100")
+    plt.xlabel(f"$\\mu(t)$, {period[base_year]}=100")
+    plt.ylabel(f"Fixed Assets Retirement Value, {period[base_year]}=100")
     plt.plot(_ratio, _value)
     plt.grid()
     plt.figure(7)
     plt.title(
         "Labor Capital Intensity, %d=100, {}$-${}".format(
-            period[year_base],
+            period[base_year],
             period[0],
         )
     )
-    plt.xlabel(f"Labor Capital Intensity, {period[year_base]}=100")
-    plt.ylabel(f"Labor Productivity, {period[year_base]}=100")
+    plt.xlabel(f"Labor Capital Intensity, {period[base_year]}=100")
+    plt.ylabel(f"Labor Productivity, {period[base_year]}=100")
     plt.plot(np.exp(Y01), np.exp(Y02))
-    # plt.legend()
     plt.grid()
     plt.show()
