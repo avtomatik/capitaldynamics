@@ -3,7 +3,7 @@ from typing import Any
 
 import duckdb
 
-from .paths import WAREHOUSE
+from capitaldynamics.config.paths import WAREHOUSE
 
 ###############################################################################
 # Mart definitions
@@ -26,28 +26,16 @@ from .paths import WAREHOUSE
 #     the mart because the source observations are now in raw.observations.
 #
 ###############################################################################
+
+
 MART_DEFINITIONS: dict[str, dict[str, Any]] = {
     # =========================================================================
     # Historical workbook reconstruction 1
     # =========================================================================
     "dataset_1": {
-        "workbooks": [
-            "Calculation 2013-05-22-3 Revisited 2017-08-11.xlsm",
-        ],
-        "series": [
-            "A191RC1",
-            "A191RX1",
-            "A006RC1",
-            "K160021",
-            "A4601C0",
-        ],
-        "required": [
-            "A191RC1",
-            "A191RX1",
-            "A006RC1",
-            "K160021",
-            "A4601C0",
-        ],
+        "workbooks": ["Calculation 2013-05-22-3 Revisited 2017-08-11.xlsm"],
+        "series": ["A191RC1", "A191RX1", "A006RC1", "K160021", "A4601C0"],
+        "required": ["A191RC1", "A191RX1", "A006RC1", "K160021", "A4601C0"],
     },
     # =========================================================================
     # Historical workbook reconstruction 2
@@ -90,9 +78,7 @@ MART_DEFINITIONS: dict[str, dict[str, Any]] = {
     # Historical workbook reconstruction 3
     # =========================================================================
     "dataset_3": {
-        "workbooks": [
-            "Calculation 2013-08-18 Revisited 2017-09-04.xlsm",
-        ],
+        "workbooks": ["Calculation 2013-08-18 Revisited 2017-09-04.xlsm"],
         "series": [
             "A191RC1",
             "A191RX1",
@@ -182,9 +168,7 @@ MART_DEFINITIONS: dict[str, dict[str, Any]] = {
     # average. They are therefore deliberately NOT required individually.
     #
     "capital_output_labor_archived": {
-        "workbooks": [
-            "Calculation 2013-05-22-3 Revisited 2017-08-11.xlsm",
-        ],
+        "workbooks": ["Calculation 2013-05-22-3 Revisited 2017-08-11.xlsm"],
         "series": [
             "A006RC1",
             "A191RC1",
@@ -653,10 +637,7 @@ def build_marts(warehouse: Path = WAREHOUSE) -> None:
 def print_marts(warehouse: Path = WAREHOUSE) -> None:
     """Print every reconstructed and semantic mart."""
     with duckdb.connect(str(warehouse), read_only=True) as con:
-        mart_names = [
-            *MART_DEFINITIONS,
-            "capital_dynamics_archived",
-        ]
+        mart_names = [*MART_DEFINITIONS, "capital_dynamics_archived"]
         for name in mart_names:
             print(f"\n{'=' * 80}")
             print(f"marts.{name}")

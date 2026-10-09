@@ -1,26 +1,9 @@
 import duckdb
 
-from capitaldynamics._deprecated.paths import WAREHOUSE
 from capitaldynamics._deprecated.visualization import plot_capital_retirement
-from capitaldynamics._retired.visualization import plot_calculate_capital_aquisition
-
-# =============================================================================
-# Alpha: Capital Retirement Ratio
-# Pi: Investment to Capital Conversion Ratio
-# =============================================================================
-# =============================================================================
-# Project: Interactive Capital Acquisitions
-# =============================================================================
-# =============================================================================
-# capital_acquisitions.yaml
-# =============================================================================
-# =============================================================================
-# Project: Interactive Capital Retirement
-# =============================================================================
-# =============================================================================
-# capital_retirement.yaml
-# =============================================================================
-
+from capitaldynamics._retired.visualization import \
+    plot_calculate_capital_aquisition
+from capitaldynamics.config.paths import WAREHOUSE
 
 with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
     df = con.sql(

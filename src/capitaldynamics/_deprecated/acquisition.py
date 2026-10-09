@@ -1,19 +1,9 @@
 import duckdb
 
-from capitaldynamics._deprecated.paths import WAREHOUSE
 from capitaldynamics._deprecated.visualization import plot_capital_acquisition
+from capitaldynamics.config.paths import WAREHOUSE
 
-###############################################################################
-# BASE_YEAR = 1967
-###############################################################################
 with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
-    # df = con.sql(
-    #     """
-    #     SELECT *
-    #     FROM marts.local_dataset
-    #     ORDER BY year
-    #     """
-    # ).df()
     df = con.sql(
         """
         SELECT *

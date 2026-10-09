@@ -1,13 +1,10 @@
 import duckdb
 
-from capitaldynamics._deprecated.paths import WAREHOUSE
 from capitaldynamics._deprecated.visualization import plot_capital_retirement
 from capitaldynamics._retired.visualization import run_capital_retirement
+from capitaldynamics.config.paths import WAREHOUSE
 
 with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
-    ###########################################################################
-    # BASE_YEAR = 1967 | 1951
-    ###########################################################################
     df = con.sql(
         """
         SELECT *
