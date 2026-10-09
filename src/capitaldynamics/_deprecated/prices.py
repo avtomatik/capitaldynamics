@@ -26,7 +26,4 @@ def get_price_base_nr(df: pd.DataFrame, columns: tuple[int] = (0, 1)) -> int:
     df["__deflator"] = (
         df.iloc[:, columns[0]].div(df.iloc[:, columns[-1]]).sub(1).abs()
     )
-    # =========================================================================
-    # Basic Year
-    # =========================================================================
     return int(df.index[df.iloc[:, -1].argmin()])

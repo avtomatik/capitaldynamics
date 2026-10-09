@@ -1,63 +1,28 @@
-import duckdb
+from capitaldynamics.data.loader import load_data
 
-from capitaldynamics._deprecated.paths import WAREHOUSE
-from capitaldynamics._deprecated.visualization import plot_capital_retirement
-from capitaldynamics._retired.visualization import run_capital_retirement
+from .visualization import plot_capital_retirement
 
-with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
-    ###########################################################################
-    # BASE_YEAR = 1967 | 1951
-    ###########################################################################
-    df = con.sql(
-        """
-        SELECT *
-        FROM marts.capital_dynamics_archived
-        ORDER BY year
-        """
-    ).df()
+COLUMNS = [
+    "real_investment",
+    "nominal_gdp",
+    "real_gdp",
+    "real_fixed_assets",
+    "manufacturing_labor",
+]
 
-df = df.set_index("year")
+COLUMNS = [
+    "real_investment",
+    "full_capacity_nominal_gdp",
+    "full_capacity_real_gdp",
+    "real_fixed_assets",
+    "manufacturing_labor",
+]
 
-df.loc[
-    :,
-    [
-        "real_investment",
-        "real_gdp",
-        "nominal_gdp",
-        "real_fixed_assets",
-        "manufacturing_labor",
-    ],
-].pipe(plot_capital_retirement)
 
-df.loc[
-    :,
-    [
-        "real_investment",
-        "real_gdp",
-        "nominal_gdp",
-        "real_fixed_assets",
-        "manufacturing_labor",
-    ],
-].pipe(run_capital_retirement)
+def main() -> None:
+    data = load_data()
+    data.loc[:, COLUMNS].pipe(plot_capital_retirement)
 
-df.loc[
-    :,
-    [
-        "real_investment",
-        "full_capacity_real_gdp",
-        "nominal_gdp",
-        "real_fixed_assets",
-        "manufacturing_labor",
-    ],
-].pipe(plot_capital_retirement)
 
-df.loc[
-    :,
-    [
-        "real_investment",
-        "full_capacity_real_gdp",
-        "nominal_gdp",
-        "real_fixed_assets",
-        "manufacturing_labor",
-    ],
-].pipe(run_capital_retirement)
+if __name__ == "__main__":
+    main()

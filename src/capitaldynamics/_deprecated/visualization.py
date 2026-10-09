@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from capitaldynamics._deprecated.prices import get_price_base_nr
+from .prices import get_price_base_nr
 
 
 def plot_capital_acquisition(df: pd.DataFrame) -> None:
@@ -143,10 +143,11 @@ def plot_capital_acquisition(df: pd.DataFrame) -> None:
             _ += 1
     else:
         print("Error")
+
     # =========================================================================
     # Calculate Dynamic Values
     # =========================================================================
-    _calculated = [np.nan]
+    _calculated = [pd.NA]
     if N == 1:
         j = 0
         for i in range(_knots[j], _knots[1 + j]):
@@ -367,17 +368,18 @@ def plot_capital_retirement(df: pd.DataFrame) -> None:
             _ += 1
     else:
         print("Error")
+
     # =========================================================================
     # Calculate Dynamic Values
     # =========================================================================
     # =========================================================================
     # Fixed Assets Retirement Value
     # =========================================================================
-    _value = [np.nan]
+    _value = [pd.NA]
     # =========================================================================
     # Fixed Assets Retirement Ratio
     # =========================================================================
-    _ratio = [np.nan]
+    _ratio = [pd.NA]
     if N == 1:
         j = 0
         for i in range(_knots[j], _knots[1 + j]):

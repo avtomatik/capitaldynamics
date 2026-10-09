@@ -6,8 +6,8 @@ import pandas as pd
 def run_capital_retirement(
     period,
     investment,
-    real_production,
     nominal_production,
+    real_production,
     fixed_assets,
     labor,
 ):
@@ -88,19 +88,18 @@ def run_capital_retirement(
                         i += 1
         else:
             print("Error")
-        X05 = []
-        X06 = []
-        # =============================================================================
-        # Fixed Assets Retirement Value
-        # =============================================================================
-        X05.append(np.nan)
-        # =============================================================================
-        # Fixed Assets Retirement Ratio
-        # =============================================================================
-        X06.append(np.nan)
+
         # =============================================================================
         # Calculate Dynamic Values
         # =============================================================================
+        # =============================================================================
+        # Fixed Assets Retirement Value
+        # =============================================================================
+        X05 = [pd.NA]
+        # =============================================================================
+        # Fixed Assets Retirement Ratio
+        # =============================================================================
+        X06 = [pd.NA]
         if N == 1:
             j = 0
             for i in range(_knots[j], _knots[1 + j]):
@@ -248,8 +247,8 @@ def run_capital_retirement(
 def run_capital_acquisitions(
     period,
     investment,
-    real_production,
     nominal_production,
+    real_production,
     full_capacity_production,
     fixed_assets,
     labor,
@@ -362,9 +361,9 @@ def run_capital_acquisitions(
                         i += 1
         else:
             print("Error")
-        X11 = []
-        for i in range(1 + start):
-            X11.append(np.nan)
+
+        X11 = [pd.NA] * (1 + start)
+
         if N == 1:
             j = 0
             for i in range(_knots[j], _knots[1 + j]):
@@ -490,8 +489,8 @@ def run_capital_acquisitions(
 def run_capital_retirement_x(
     period,
     investment,
-    real_production,
     nominal_production,
+    real_production,
     fixed_assets,
     labor,
 ):
@@ -587,13 +586,12 @@ def run_capital_retirement_x(
                         i += 1
         else:
             print("Error")
-        Y05 = []
-        Y06 = []
-        Y05.append(np.nan)  # Fixed Assets Retirement Value
-        Y06.append(np.nan)  # Fixed Assets Retirement Ratio
+
         # =============================================================================
         # Calculate Dynamic Values
         # =============================================================================
+        Y05 = [pd.NA]  # Fixed Assets Retirement Value
+        Y06 = [pd.NA]  # Fixed Assets Retirement Ratio
         if N == 1:
             j = 0
             for i in range(_knots[j], _knots[1 + j]):
@@ -838,9 +836,9 @@ def plot_calculate_capital_aquisition(df: pd.DataFrame):
                         _ += 1
         else:
             print("Error")
-        XKK = []
-        for _ in range(1):
-            XKK.append(np.nan)
+
+        XKK = [pd.NA]
+
         if N == 1:
             j = 0
             for _ in range(_knots[j], _knots[1 + j]):
@@ -1071,11 +1069,12 @@ def calculate_capital_retirement(df: pd.DataFrame):
                         _ += 1
         else:
             print("Error")
-        YEE = []
-        YFF = []
-        YEE.append(np.nan)  # Fixed Assets Retirement Value
-        YFF.append(np.nan)  # Fixed Assets Retirement Ratio
-        """Calculate Dynamic Values"""
+
+        # =============================================================================
+        # Calculate Dynamic Values
+        # =============================================================================
+        YEE = [pd.NA]  # Fixed Assets Retirement Value
+        YFF = [pd.NA]  # Fixed Assets Retirement Ratio
         if N == 1:
             j = 0
             for _ in range(_knots[j], _knots[1 + j]):
