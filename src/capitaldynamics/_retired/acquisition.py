@@ -1,6 +1,6 @@
 from capitaldynamics.data.loader import load_data
 
-from .visualization import plot_calculate_capital_aquisition
+from .visualization import calculate_acquisition
 
 COLUMNS = [
     "real_investment",
@@ -14,7 +14,7 @@ COLUMNS = [
 
 def main() -> None:
     data = load_data()
-    data.loc[:, COLUMNS].pipe(plot_calculate_capital_aquisition)
+    data.loc[:, COLUMNS].pipe(calculate_acquisition)
 
 
 if __name__ == "__main__":
