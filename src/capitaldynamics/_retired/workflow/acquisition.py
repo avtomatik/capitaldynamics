@@ -88,15 +88,15 @@ def run_acquisition_workflow(
     # Pi & Pi Switch Points
     ###########################################################################
     pi = []
-    _knots = [0]
+    nodes = [0]
     _ = 0
     if N == 1:
-        _knots.append(len(period) - 1)
+        nodes.append(len(period) - 1)
         pi.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        period[_knots[_]], period[_knots[_ + 1] - 1]
+                        period[nodes[_]], period[nodes[_ + 1] - 1]
                     )
                 )
             )
@@ -104,31 +104,31 @@ def run_acquisition_workflow(
     elif N >= 2:
         while _ < N:
             if _ + 1 == N:
-                _knots.append(len(period) - 1)
+                nodes.append(len(period) - 1)
                 pi.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                period[_knots[_]], period[_knots[_ + 1] - 1]
+                                period[nodes[_]], period[nodes[_ + 1] - 1]
                             )
                         )
                     )
                 )
                 _ += 1
             else:
-                _knot = int(
+                node = int(
                     input(
                         "Select Row for Year, Should Be More Than %d:=%d: "
                         % (0, period[0])
                     )
                 )
-                if _knot > _knots[_]:
-                    _knots.append(_knot)
+                if node > nodes[_]:
+                    nodes.append(node)
                     pi.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    period[_knots[_]], period[_knots[_ + 1]]
+                                    period[nodes[_]], period[nodes[_ + 1]]
                                 )
                             )
                         )
@@ -137,9 +137,8 @@ def run_acquisition_workflow(
     else:
         print("Error")
     _calculated = [pd.NA]
-    if N == 1:
-        j = 0
-        for _ in range(_knots[j], _knots[j + 1]):
+    for j in range(N):
+        for _ in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Estimate: GCF[-] or CA[+]
             ###################################################################
@@ -148,28 +147,6 @@ def run_acquisition_workflow(
                 - real_fixed_assets[_]
                 + pi[j] * investment[_ + 1]
             )
-    else:
-        for j in range(N):
-            if j + _ == N:
-                for _ in range(_knots[j], _knots[j + 1]):
-                    ###########################################################
-                    # Estimate: GCF[-] or CA[+]
-                    ###########################################################
-                    _calculated.append(
-                        real_fixed_assets[_ + 1]
-                        - real_fixed_assets[_]
-                        + pi[j] * investment[_ + 1]
-                    )
-            else:
-                for _ in range(_knots[j], _knots[j + 1]):
-                    ###########################################################
-                    # Estimate: GCF[-] or CA[+]
-                    ###########################################################
-                    _calculated.append(
-                        real_fixed_assets[_ + 1]
-                        - real_fixed_assets[_]
-                        + pi[j] * investment[_ + 1]
-                    )
     _calculated = pd.DataFrame(_calculated, columns=["Y11"])
     df = pd.DataFrame(period, columns=["year"])
     df = pd.concat(
@@ -191,14 +168,12 @@ def run_acquisition_workflow(
         "Y11",
     ]
     # {"-": "Gross Capital Formation", "+": "Capital Acquisitions"}
-    for _ in range(N):
-        if _ + 1 == N:
-            print(
-                f"Model Parameter: Pi for Period from {period[_knots[_]]} to {period[_knots[_ + 1] - 1]}: {pi[_]:.6f}"
-            )
-            continue
+    for i in range(N):
+        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
         print(
-            f"Model Parameter: Pi for Period from {period[_knots[_]]} to {period[_knots[_ + 1]]}: {pi[_]:.6f}"
+            "Model Parameter: Pi for Period from "
+            f"{period[nodes[i]]} to {period[end]}: "
+            f"{pi[i]:.6f}"
         )
     plt.figure(1)
     plt.plot(Y03, Y04)
@@ -206,7 +181,7 @@ def run_acquisition_workflow(
     plt.title(
         "Labor Productivity, Observed & Max, %d=100, {}$-${}".format(
             period[base_year],
-            period[_knots[0]],
+            period[nodes[0]],
         )
     )
     plt.xlabel("Labor Capital Intensity")
@@ -218,7 +193,7 @@ def run_acquisition_workflow(
     plt.title(
         "Log Labor Productivity, Observed & Max, %d=100, {}$-${}".format(
             period[base_year],
-            period[_knots[0]],
+            period[nodes[0]],
         )
     )
     plt.xlabel("Log Labor Capital Intensity")
@@ -230,7 +205,7 @@ def run_acquisition_workflow(
     plt.title(
         "Fixed Assets Turnover, Observed & Max, %d=100, {}$-${}".format(
             period[base_year],
-            period[_knots[0]],
+            period[nodes[0]],
         )
     )
     plt.xlabel("year")
@@ -242,7 +217,7 @@ def run_acquisition_workflow(
     plt.title(
         "Investment to Gross Domestic Product Ratio,\nObserved & Max, %d=100, {}$-${}".format(
             period[base_year],
-            period[_knots[0]],
+            period[nodes[0]],
         )
     )
     plt.xlabel("year")
@@ -253,7 +228,7 @@ def run_acquisition_workflow(
     plt.title(
         "Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), %d=100, {}$-${}".format(
             period[base_year],
-            period[_knots[0]],
+            period[nodes[0]],
         )
     )
     plt.xlabel("year")

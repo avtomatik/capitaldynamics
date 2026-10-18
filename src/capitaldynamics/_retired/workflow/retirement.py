@@ -51,15 +51,15 @@ def run_retirement_workflow(
     # Pi & Pi Switch Points
     ###########################################################################
     pi = []
-    _knots = [0]
+    nodes = [0]
     _ = 0
     if N == 1:
-        _knots.append(len(period) - 1)
+        nodes.append(len(period) - 1)
         pi.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        period[_knots[_]], period[_knots[_ + 1]]
+                        period[nodes[_]], period[nodes[_ + 1]]
                     )
                 )
             )
@@ -67,26 +67,26 @@ def run_retirement_workflow(
     elif N >= 2:
         while _ < N:
             if _ + 1 == N:
-                _knots.append(len(period) - 1)
+                nodes.append(len(period) - 1)
                 pi.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                period[_knots[_]], period[_knots[_ + 1]]
+                                period[nodes[_]], period[nodes[_ + 1]]
                             )
                         )
                     )
                 )
                 _ += 1
             else:
-                _knot = int(input("Select Row for Year: "))
-                if _knot > _knots[_]:
-                    _knots.append(_knot)
+                node = int(input("Select Row for Year: "))
+                if node > nodes[_]:
+                    nodes.append(node)
                     pi.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    period[_knots[_]], period[_knots[_ + 1]]
+                                    period[nodes[_]], period[nodes[_ + 1]]
                                 )
                             )
                         )
@@ -105,9 +105,8 @@ def run_retirement_workflow(
     # Fixed Assets Retirement Ratio
     ###########################################################################
     _ratio = [pd.NA]
-    if N == 1:
-        j = 0
-        for _ in range(_knots[j], _knots[j + 1]):
+    for j in range(N):
+        for _ in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Fixed Assets Retirement Value
             ###################################################################
@@ -121,50 +120,6 @@ def run_retirement_workflow(
                 (fixed_assets[_] - fixed_assets[_ + 1] + pi[j] * investment[_])
                 / fixed_assets[_ + 1]
             )
-    else:
-        for j in range(N):
-            if j + _ == N:
-                for _ in range(_knots[j], _knots[j + 1]):
-                    ###########################################################
-                    # Fixed Assets Retirement Value
-                    ###########################################################
-                    _value.append(
-                        fixed_assets[_]
-                        - fixed_assets[_ + 1]
-                        + pi[j] * investment[_]
-                    )
-                    ###########################################################
-                    # Fixed Assets Retirement Ratio
-                    ###########################################################
-                    _ratio.append(
-                        (
-                            fixed_assets[_]
-                            - fixed_assets[_ + 1]
-                            + pi[j] * investment[_]
-                        )
-                        / fixed_assets[_ + 1]
-                    )
-            else:
-                for _ in range(_knots[j], _knots[j + 1]):
-                    ###########################################################
-                    # Fixed Assets Retirement Value
-                    ###########################################################
-                    _value.append(
-                        fixed_assets[_]
-                        - fixed_assets[_ + 1]
-                        + pi[j] * investment[_]
-                    )
-                    ###########################################################
-                    # Fixed Assets Retirement Ratio
-                    ###########################################################
-                    _ratio.append(
-                        (
-                            fixed_assets[_]
-                            - fixed_assets[_ + 1]
-                            + pi[j] * investment[_]
-                        )
-                        / fixed_assets[_ + 1]
-                    )
     _value = pd.DataFrame(_value, columns=["Y05"])
     _ratio = pd.DataFrame(_ratio, columns=["Y06"])
     df = pd.DataFrame(period, columns=["year"])
@@ -174,14 +129,12 @@ def run_retirement_workflow(
     df["Y07"] = df["Y07"].abs()
     df["Y08"] = df["Y06"].diff()
     df["Y08"] = df["Y08"].abs()
-    for _ in range(N):
-        if _ + 1 == N:
-            print(
-                f"Model Parameter: Pi for Period from {period[_knots[_]]} to {period[_knots[_ + 1] - 1]}: {pi[_]:.6f}"
-            )
-            continue
+    for i in range(N):
+        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
         print(
-            f"Model Parameter: Pi for Period from {period[_knots[_]]} to {period[_knots[_ + 1]]}: {pi[_]:.6f}"
+            "Model Parameter: Pi for Period from "
+            f"{period[nodes[i]]} to {period[end]}: "
+            f"{pi[i]:.6f}"
         )
     plt.figure(1)
     plt.title(

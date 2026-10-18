@@ -95,15 +95,15 @@ def plot_acquisition(df: pd.DataFrame) -> None:
     # Pi & Pi Switch Points
     ###########################################################################
     pi = []
-    _knots = [0]
+    nodes = [0]
     _ = 0
     if N == 1:
-        _knots.append(_df.index[-1])
+        nodes.append(_df.index[-1])
         pi.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        _df.iloc[_knots[_], 0], _df.iloc[_knots[_ + 1] - 1, 0]
+                        _df.iloc[nodes[_], 0], _df.iloc[nodes[_ + 1] - 1, 0]
                     )
                 )
             )
@@ -111,33 +111,33 @@ def plot_acquisition(df: pd.DataFrame) -> None:
     elif N >= 2:
         while _ < N:
             if _ + 1 == N:
-                _knots.append(_df.index[-1])
+                nodes.append(_df.index[-1])
                 pi.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                _df.iloc[_knots[_], 0],
-                                _df.iloc[_knots[_ + 1] - 1, 0],
+                                _df.iloc[nodes[_], 0],
+                                _df.iloc[nodes[_ + 1] - 1, 0],
                             )
                         )
                     )
                 )
             else:
-                _knot = int(
+                node = int(
                     input(
                         "Select Row for Year, Should Be More Than {}: = {}: ".format(
                             0, _df.iloc[0, 0]
                         )
                     )
                 )
-                if _knot > _knots[_]:
-                    _knots.append(_knot)
+                if node > nodes[_]:
+                    nodes.append(node)
                     pi.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    _df.iloc[_knots[_], 0],
-                                    _df.iloc[_knots[_ + 1], 0],
+                                    _df.iloc[nodes[_], 0],
+                                    _df.iloc[nodes[_ + 1], 0],
                                 )
                             )
                         )
@@ -149,9 +149,8 @@ def plot_acquisition(df: pd.DataFrame) -> None:
     # Calculate Dynamic Values
     ###########################################################################
     _calculated = [pd.NA]
-    if N == 1:
-        j = 0
-        for i in range(_knots[j], _knots[j + 1]):
+    for j in range(N):
+        for i in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Estimate: GCF[-] or CA[+]
             ###################################################################
@@ -160,41 +159,17 @@ def plot_acquisition(df: pd.DataFrame) -> None:
                 - _df.iloc[i, 5]
                 + pi[j] * _df.iloc[i + 1, 1]
             )
-    else:
-        for j in range(N):
-            if j + 1 == N:
-                for i in range(_knots[j], _knots[j + 1]):
-                    ###########################################################
-                    # Estimate: GCF[-] or CA[+]
-                    ###########################################################
-                    _calculated.append(
-                        _df.iloc[i + 1, 5]
-                        - _df.iloc[i, 5]
-                        + pi[j] * _df.iloc[i + 1, 1]
-                    )
-            else:
-                for i in range(_knots[j], _knots[j + 1]):
-                    ###########################################################
-                    # Estimate: GCF[-] or CA[+]
-                    ###########################################################
-                    _calculated.append(
-                        _df.iloc[i + 1, 5]
-                        - _df.iloc[i, 5]
-                        + pi[j] * _df.iloc[i + 1, 1]
-                    )
     _df = pd.concat(
         [_df, pd.DataFrame(_calculated, columns=["_calculated"])], axis=1
     )
     _df.set_index(_df.columns[0], inplace=True)
     # {"-": "Gross Capital Formation", "+": "Capital Acquisitions"}
-    for _ in range(N):
-        if _ + 1 == N:
-            print(
-                f"Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[_ + 1] - 1]}: {pi[_]:.6f}"
-            )
-            continue
+    for i in range(N):
+        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
         print(
-            f"Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[_ + 1]]}: {pi[_]:.6f}"
+            "Model Parameter: Pi for Period from "
+            f"{_df.index[nodes[i]]} to {_df.index[end]}: "
+            f"{pi[i]:.6f}"
         )
     plt.figure(1)
     plt.plot(_df.iloc[:, 8], _df.iloc[:, 9])
@@ -325,15 +300,15 @@ def plot_retirement(df: pd.DataFrame) -> None:
     # Pi & Pi Switch Points
     ###########################################################################
     pi = []
-    _knots = [0]
+    nodes = [0]
     _ = 0
     if N == 1:
-        _knots.append(_df.index[-1])
+        nodes.append(_df.index[-1])
         pi.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        _df.iloc[_knots[_], 0], _df.iloc[_knots[_ + 1], 0]
+                        _df.iloc[nodes[_], 0], _df.iloc[nodes[_ + 1], 0]
                     )
                 )
             )
@@ -341,27 +316,27 @@ def plot_retirement(df: pd.DataFrame) -> None:
     elif N >= 2:
         while _ < N:
             if _ + 1 == N:
-                _knots.append(_df.index[-1])
+                nodes.append(_df.index[-1])
                 pi.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                _df.iloc[_knots[_], 0],
-                                _df.iloc[_knots[_ + 1], 0],
+                                _df.iloc[nodes[_], 0],
+                                _df.iloc[nodes[_ + 1], 0],
                             )
                         )
                     )
                 )
             else:
-                _knot = int(input("Select Row for Year: "))
-                if _knot > _knots[_]:
-                    _knots.append(_knot)
+                node = int(input("Select Row for Year: "))
+                if node > nodes[_]:
+                    nodes.append(node)
                     pi.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    _df.iloc[_knots[_], 0],
-                                    _df.iloc[_knots[_ + 1], 0],
+                                    _df.iloc[nodes[_], 0],
+                                    _df.iloc[nodes[_ + 1], 0],
                                 )
                             )
                         )
@@ -380,9 +355,8 @@ def plot_retirement(df: pd.DataFrame) -> None:
     # Fixed Assets Retirement Ratio
     ###########################################################################
     _ratio = [pd.NA]
-    if N == 1:
-        j = 0
-        for i in range(_knots[j], _knots[j + 1]):
+    for j in range(N):
+        for i in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Fixed Assets Retirement Value
             ###################################################################
@@ -396,50 +370,6 @@ def plot_retirement(df: pd.DataFrame) -> None:
                 (_df.iloc[i, 4] - _df.iloc[i + 1, 4] + pi[j] * _df.iloc[i, 1])
                 / _df.iloc[i + 1, 4]
             )
-    else:
-        for j in range(N):
-            if j + 1 == N:
-                for i in range(_knots[j], _knots[j + 1]):
-                    ###########################################################
-                    # Fixed Assets Retirement Value
-                    ###########################################################
-                    _value.append(
-                        _df.iloc[i, 4]
-                        - _df.iloc[i + 1, 4]
-                        + pi[j] * _df.iloc[i, 1]
-                    )
-                    ###########################################################
-                    # Fixed Assets Retirement Ratio
-                    ###########################################################
-                    _ratio.append(
-                        (
-                            _df.iloc[i, 4]
-                            - _df.iloc[i + 1, 4]
-                            + pi[j] * _df.iloc[i, 1]
-                        )
-                        / _df.iloc[i + 1, 4]
-                    )
-            else:
-                for i in range(_knots[j], _knots[j + 1]):
-                    ###########################################################
-                    # Fixed Assets Retirement Value
-                    ###########################################################
-                    _value.append(
-                        _df.iloc[i, 4]
-                        - _df.iloc[i + 1, 4]
-                        + pi[j] * _df.iloc[i, 1]
-                    )
-                    ###########################################################
-                    # Fixed Assets Retirement Ratio
-                    ###########################################################
-                    _ratio.append(
-                        (
-                            _df.iloc[i, 4]
-                            - _df.iloc[i + 1, 4]
-                            + pi[j] * _df.iloc[i, 1]
-                        )
-                        / _df.iloc[i + 1, 4]
-                    )
     _df = pd.concat(
         [
             _df,
@@ -453,14 +383,12 @@ def plot_retirement(df: pd.DataFrame) -> None:
         _df.iloc[:, 10].sub(_df.iloc[:, 10].mean()).abs()
     )
     _df["_ratio_increment_abs"] = _df.iloc[:, 10].diff().abs()
-    for _ in range(N):
-        if _ + 1 == N:
-            print(
-                f"Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[_ + 1] - 1]}: {pi[_]:.6f}"
-            )
-            continue
+    for i in range(N):
+        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
         print(
-            f"Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[_ + 1]]}: {pi[_]:.6f}"
+            "Model Parameter: Pi for Period from "
+            f"{_df.index[nodes[i]]} to {_df.index[end]}: "
+            f"{pi[i]:.6f}"
         )
     plt.figure(1)
     plt.title("Product, {}=100, {}$-${}".format(_b, *df.index[[0, -1]]))

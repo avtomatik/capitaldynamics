@@ -68,30 +68,29 @@ def run_acquisition(
         return
     print(f"Number of Spans Provided: {N}")
     pi = []
-    _knots = []  # Gamma Switch Points & Gamma
-    _knots.append(start)
+    nodes = [start]  # Gamma Switch Points & Gamma
     i = 0
     if N == 1:
-        _knots.append(len(period) - 1)
+        nodes.append(len(period) - 1)
         pi.append(
             float(
                 input(
                     "Define Gamma for Period from %d to %d: "
-                    % (period[_knots[i]], period[_knots[i + 1] - 1])
+                    % (period[nodes[i]], period[nodes[i + 1] - 1])
                 )
             )
         )
     elif N >= 2:
         while i < N:
             if i + 1 == N:
-                _knots.append(len(period) - 1)
+                nodes.append(len(period) - 1)
                 pi.append(
                     float(
                         input(
                             "Define Gamma for Period from %d to %d: "
                             % (
-                                period[_knots[i]],
-                                period[_knots[i + 1] - 1],
+                                period[nodes[i]],
+                                period[nodes[i + 1] - 1],
                             )
                         )
                     )
@@ -104,15 +103,15 @@ def run_acquisition(
                         % (start, period[start])
                     )
                 )
-                if y > _knots[i]:
-                    _knots.append(y)
+                if y > nodes[i]:
+                    nodes.append(y)
                     pi.append(
                         float(
                             input(
                                 "Define Gamma for Period from %d to %d: "
                                 % (
-                                    period[_knots[i]],
-                                    period[_knots[i + 1]],
+                                    period[nodes[i]],
+                                    period[nodes[i + 1]],
                                 )
                             )
                         )
@@ -121,33 +120,14 @@ def run_acquisition(
     else:
         print("Error")
     X11 = [pd.NA] * (start + 1)
-    if N == 1:
-        j = 0
-        for i in range(_knots[j], _knots[j + 1]):
+    for j in range(N):
+        for i in range(nodes[j], nodes[j + 1]):
             # Estimate: GCF[-] or CA[+]
             X11.append(
                 fixed_assets[i + 1]
                 - fixed_assets[i]
                 + pi[j] * investment[i + 1]
             )
-    else:
-        for j in range(N):
-            if j + 1 == N:
-                for i in range(_knots[j], _knots[j + 1]):
-                    # Estimate: GCF[-] or CA[+]
-                    X11.append(
-                        fixed_assets[i + 1]
-                        - fixed_assets[i]
-                        + pi[j] * investment[i + 1]
-                    )
-            else:
-                for i in range(_knots[j], _knots[j + 1]):
-                    # Estimate: GCF[-] or CA[+]
-                    X11.append(
-                        fixed_assets[i + 1]
-                        - fixed_assets[i]
-                        + pi[j] * investment[i + 1]
-                    )
     X11 = pd.DataFrame(X11, columns=["X11"])
     df = pd.DataFrame(period, columns=["year"])
     df = pd.concat(
@@ -169,22 +149,18 @@ def run_acquisition(
     ]
     # {"-": "Gross Capital Formation", "+": "Capital Acquisitions"}
     for i in range(N):
-        if i + 1 == N:
-            print(
-                "Model Parameter: Gamma for Period from %d to %d: %f"
-                % (period[_knots[i]], period[_knots[i + 1] - 1], pi[i])
-            )
-        else:
-            print(
-                "Model Parameter: Gamma for Period from %d to %d: %f"
-                % (period[_knots[i]], period[_knots[i + 1]], pi[i])
-            )
+        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
+        print(
+            "Model Parameter: Gamma for Period from "
+            f"{period[nodes[i]]} to {period[end]}: "
+            f"{pi[i]:.6f}"
+        )
     plt.figure(1)
     plt.plot(X03, X04)
     plt.plot(X03, X09)
     plt.title(
         "Labor Productivity, Observed & Max, %d=100, %d$-$%d"
-        % (base_year, period[_knots[0]], period[_knots[N] - 1])
+        % (base_year, period[nodes[0]], period[nodes[N] - 1])
     )
     plt.xlabel("Labor Capital Intensity")
     plt.ylabel(f"Labor Productivity, {base_year}=100")
@@ -194,7 +170,7 @@ def run_acquisition(
     plt.plot(X05, X10)
     plt.title(
         "Log Labor Productivity, Observed & Max, %d=100, %d$-$%d"
-        % (base_year, period[_knots[0]], period[_knots[N] - 1])
+        % (base_year, period[nodes[0]], period[nodes[N] - 1])
     )
     plt.xlabel("Log Labor Capital Intensity")
     plt.ylabel(f"Log Labor Productivity, {base_year}=100")
@@ -204,7 +180,7 @@ def run_acquisition(
     plt.plot(period, X07)
     plt.title(
         "Fixed Assets Turnover, Observed & Max, %d=100, %d$-$%d"
-        % (base_year, period[_knots[0]], period[_knots[N] - 1])
+        % (base_year, period[nodes[0]], period[nodes[N] - 1])
     )
     plt.xlabel("year")
     plt.ylabel(f"Fixed Assets Turnover, {base_year}=100")
@@ -214,7 +190,7 @@ def run_acquisition(
     plt.plot(period, X08)
     plt.title(
         "Investment to Gross Domestic Product Ratio,\nObserved & Max, %d=100, %d$-$%d"
-        % (base_year, period[_knots[0]], period[_knots[N]])
+        % (base_year, period[nodes[0]], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(
@@ -225,7 +201,7 @@ def run_acquisition(
     plt.plot(period, X11)
     plt.title(
         "Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), %d=100, %d$-$%d"
-        % (base_year, period[_knots[0]], period[_knots[N] - 1])
+        % (base_year, period[nodes[0]], period[nodes[N] - 1])
     )
     plt.xlabel("year")
     plt.ylabel(f"GCF or CA, {base_year}=100")
@@ -288,30 +264,30 @@ def calculate_acquisition(df: pd.DataFrame) -> None:
     # Pi & Pi Switch Points
     ###########################################################################
     pi = []
-    _knots = [0]
+    nodes = [0]
     _ = 0
     if N == 1:
-        _knots.append(df.shape[0] - 1)
+        nodes.append(df.shape[0] - 1)
         pi.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        df.iloc[_knots[_], 0],
-                        df.iloc[_knots[_ + 1] - 1, 0],
+                        df.iloc[nodes[_], 0],
+                        df.iloc[nodes[_ + 1] - 1, 0],
                     )
                 )
             )
         )
     elif N >= 2:
         while _ < N:
-            if _ == N - 1:
-                _knots.append(df.shape[0] - 1)
+            if _ + 1 == N:
+                nodes.append(df.shape[0] - 1)
                 pi.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                df.iloc[_knots[_], 0],
-                                df.iloc[_knots[_ + 1] - 1, 0],
+                                df.iloc[nodes[_], 0],
+                                df.iloc[nodes[_ + 1] - 1, 0],
                             )
                         )
                     )
@@ -325,14 +301,14 @@ def calculate_acquisition(df: pd.DataFrame) -> None:
                         )
                     )
                 )
-                if y > _knots[_]:
-                    _knots.append(y)
+                if y > nodes[_]:
+                    nodes.append(y)
                     pi.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    df.iloc[_knots[_], 0],
-                                    df.iloc[_knots[_ + 1], 0],
+                                    df.iloc[nodes[_], 0],
+                                    df.iloc[nodes[_ + 1], 0],
                                 )
                             )
                         )
@@ -341,31 +317,12 @@ def calculate_acquisition(df: pd.DataFrame) -> None:
     else:
         print("Error")
     XKK = [pd.NA]
-    if N == 1:
-        j = 0
-        for _ in range(_knots[j], _knots[j + 1]):
+    for j in range(N):
+        for _ in range(nodes[j], nodes[j + 1]):
             # Estimate: GCF[-] or CA[+]
             XKK.append(
                 df.iloc[_ + 1, 5] - df.iloc[_, 5] + pi[j] * df.iloc[_ + 1, 1]
             )
-    else:
-        for j in range(N):
-            if j + 1 == N:
-                for _ in range(_knots[j], _knots[j + 1]):
-                    # Estimate: GCF[-] or CA[+]
-                    XKK.append(
-                        df.iloc[_ + 1, 5]
-                        - df.iloc[_, 5]
-                        + pi[j] * df.iloc[_ + 1, 1]
-                    )
-            else:
-                for _ in range(_knots[j], _knots[j + 1]):
-                    # Estimate: GCF[-] or CA[+]
-                    XKK.append(
-                        df.iloc[_ + 1, 5]
-                        - df.iloc[_, 5]
-                        + pi[j] * df.iloc[_ + 1, 1]
-                    )
     XKK = pd.DataFrame(XKK, columns=["XKK"])
     result = pd.DataFrame(df.iloc[:, 0], columns=["year"])
     result = pd.concat(
@@ -387,31 +344,21 @@ def calculate_acquisition(df: pd.DataFrame) -> None:
         "XKK",
     ]
     # {"-": "Gross Capital Formation", "+": "Capital Acquisitions"}
-    for _ in range(N):
-        if _ == N - 1:
-            print(
-                "Model Parameter: Pi for Period from {} to {}: {:.6f}".format(
-                    df.iloc[_knots[_], 0],
-                    df.iloc[_knots[_ + 1] - 1, 0],
-                    pi[_],
-                )
-            )
-        else:
-            print(
-                "Model Parameter: Pi for Period from {} to {}: {:.6f}".format(
-                    df.iloc[_knots[_], 0],
-                    df.iloc[_knots[_ + 1], 0],
-                    pi[_],
-                )
-            )
+    for i in range(N):
+        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
+        print(
+            "Model Parameter: Pi for Period from "
+            f"{df.iloc[nodes[i], 0]} to {df.iloc[end, 0]}: "
+            f"{pi[i]:.6f}"
+        )
     plt.figure(1)
     plt.plot(XCC, XDD)
     plt.plot(XCC, XII)
     plt.title(
         "Labor Productivity, Observed & Max, {} = 100, {}$-${}".format(
             df.iloc[base_year, 0],
-            df.iloc[_knots[0], 0],
-            df.iloc[_knots[N] - 1, 0],
+            df.iloc[nodes[0], 0],
+            df.iloc[nodes[N] - 1, 0],
         )
     )
     plt.xlabel("Labor Capital Intensity")
@@ -423,8 +370,8 @@ def calculate_acquisition(df: pd.DataFrame) -> None:
     plt.title(
         "Log Labor Productivity, Observed & Max, {} = 100, {}$-${}".format(
             df.iloc[base_year, 0],
-            df.iloc[_knots[0], 0],
-            df.iloc[_knots[N] - 1, 0],
+            df.iloc[nodes[0], 0],
+            df.iloc[nodes[N] - 1, 0],
         )
     )
     plt.xlabel("Log Labor Capital Intensity")
@@ -438,8 +385,8 @@ def calculate_acquisition(df: pd.DataFrame) -> None:
     plt.title(
         "Fixed Assets Turnover ($\\lambda$), Observed & Max, {} = 100, {}$-${}".format(
             df.iloc[base_year, 0],
-            df.iloc[_knots[0], 0],
-            df.iloc[_knots[N] - 1, 0],
+            df.iloc[nodes[0], 0],
+            df.iloc[nodes[N] - 1, 0],
         )
     )
     plt.xlabel("year")
@@ -455,8 +402,8 @@ def calculate_acquisition(df: pd.DataFrame) -> None:
     plt.title(
         "Investment to Gross Domestic Product Ratio, \nObserved & Max, {} = 100, {}$-${}".format(
             df.iloc[base_year, 0],
-            df.iloc[_knots[0], 0],
-            df.iloc[_knots[N], 0],
+            df.iloc[nodes[0], 0],
+            df.iloc[nodes[N], 0],
         )
     )
     plt.xlabel("year")
@@ -471,8 +418,8 @@ def calculate_acquisition(df: pd.DataFrame) -> None:
     plt.title(
         "Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), {} = 100, {}$-${}".format(
             df.iloc[base_year, 0],
-            df.iloc[_knots[0], 0],
-            df.iloc[_knots[N] - 1, 0],
+            df.iloc[nodes[0], 0],
+            df.iloc[nodes[N] - 1, 0],
         )
     )
     plt.xlabel("year")
@@ -523,42 +470,42 @@ def run_retirement(
     # Pi & Pi Switch Points
     ###########################################################################
     pi = []
-    _knots = [0]
+    nodes = [0]
     i = 0
     if N == 1:
-        _knots.append(len(period) - 1)
+        nodes.append(len(period) - 1)
         pi.append(
             float(
                 input(
                     "Define Gamma for Period from %d to %d: "
-                    % (period[_knots[i]], period[_knots[i + 1]])
+                    % (period[nodes[i]], period[nodes[i + 1]])
                 )
             )
         )
     elif N >= 2:
         while i < N:
             if i + 1 == N:
-                _knots.append(len(period) - 1)
+                nodes.append(len(period) - 1)
                 pi.append(
                     float(
                         input(
                             "Define Gamma for Period from %d to %d: "
-                            % (period[_knots[i]], period[_knots[i + 1]])
+                            % (period[nodes[i]], period[nodes[i + 1]])
                         )
                     )
                 )
                 i += 1
             else:
                 y = int(input("Select Row for Year: "))
-                if y > _knots[i]:
-                    _knots.append(y)
+                if y > nodes[i]:
+                    nodes.append(y)
                     pi.append(
                         float(
                             input(
                                 "Define Gamma for Period from %d to %d: "
                                 % (
-                                    period[_knots[i]],
-                                    period[_knots[i + 1]],
+                                    period[nodes[i]],
+                                    period[nodes[i + 1]],
                                 )
                             )
                         )
@@ -577,9 +524,8 @@ def run_retirement(
     # Fixed Assets Retirement Ratio
     ###########################################################################
     X06 = [pd.NA]
-    if N == 1:
-        j = 0
-        for i in range(_knots[j], _knots[j + 1]):
+    for j in range(N):
+        for i in range(nodes[j], nodes[j + 1]):
             # Fixed Assets Retirement Value
             X05.append(
                 fixed_assets[i] - fixed_assets[i + 1] + pi[j] * investment[i]
@@ -589,42 +535,6 @@ def run_retirement(
                 (fixed_assets[i] - fixed_assets[i + 1] + pi[j] * investment[i])
                 / fixed_assets[i + 1]
             )
-    else:
-        for j in range(N):
-            if j + 1 == N:
-                for i in range(_knots[j], _knots[j + 1]):
-                    # Fixed Assets Retirement Value
-                    X05.append(
-                        fixed_assets[i]
-                        - fixed_assets[i + 1]
-                        + pi[j] * investment[i]
-                    )
-                    # Fixed Assets Retirement Ratio
-                    X06.append(
-                        (
-                            fixed_assets[i]
-                            - fixed_assets[i + 1]
-                            + pi[j] * investment[i]
-                        )
-                        / fixed_assets[i + 1]
-                    )
-            else:
-                for i in range(_knots[j], _knots[j + 1]):
-                    # Fixed Assets Retirement Value
-                    X05.append(
-                        fixed_assets[i]
-                        - fixed_assets[i + 1]
-                        + pi[j] * investment[i]
-                    )
-                    # Fixed Assets Retirement Ratio
-                    X06.append(
-                        (
-                            fixed_assets[i]
-                            - fixed_assets[i + 1]
-                            + pi[j] * investment[i]
-                        )
-                        / fixed_assets[i + 1]
-                    )
     X05 = pd.DataFrame(X05, columns=["X05"])
     X06 = pd.DataFrame(X06, columns=["X06"])
     df = pd.DataFrame(period, columns=["year"])
@@ -635,19 +545,15 @@ def run_retirement(
     df["X08"] = df["X06"].diff()
     df["X08"] = df["X08"].abs()
     for i in range(N):
-        if i + 1 == N:
-            print(
-                "Model Parameter: Gamma for Period from %d to %d: %f"
-                % (period[_knots[i]], period[_knots[i + 1]], pi[i])
-            )
-        else:
-            print(
-                "Model Parameter: Gamma for Period from %d to %d: %f"
-                % (period[_knots[i]], period[_knots[i + 1]], pi[i])
-            )
+        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
+        print(
+            "Model Parameter: Gamma for Period from "
+            f"{period[nodes[i]]} to {period[end]}: "
+            f"{pi[i]:.6f}"
+        )
     plt.figure(1)
     plt.title(
-        "Product, %d=100, %d$-$%d" % (base_year, period[0], period[_knots[N]])
+        "Product, %d=100, %d$-$%d" % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(f"Product, {base_year}=100")
@@ -655,7 +561,7 @@ def run_retirement(
     plt.grid()
     plt.figure(2)
     plt.title(
-        "Capital, %d=100, %d$-$%d" % (base_year, period[0], period[_knots[N]])
+        "Capital, %d=100, %d$-$%d" % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(f"Capital, {base_year}=100")
@@ -664,7 +570,7 @@ def run_retirement(
     plt.figure(3)
     plt.title(
         "Fixed Assets Turnover, %d=100, %d$-$%d"
-        % (base_year, period[0], period[_knots[N]])
+        % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(f"Fixed Assets Turnover, {base_year}=100")
@@ -673,7 +579,7 @@ def run_retirement(
     plt.figure(4)
     plt.title(
         "Investment to GDP Ratio, %d=100, %d$-$%d"
-        % (base_year, period[0], period[_knots[N]])
+        % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(f"Investment to GDP Ratio, {base_year}=100")
@@ -682,7 +588,7 @@ def run_retirement(
     plt.figure(5)
     plt.title(
         "$\\mu(t)$, Fixed Assets Retirement Ratio, %d=100, %d$-$%d"
-        % (base_year, period[0], period[_knots[N]])
+        % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(f"$\\mu(t)$, {base_year}=100")
@@ -691,7 +597,7 @@ def run_retirement(
     plt.figure(6)
     plt.title(
         "Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, %d=100, %d$-$%d"
-        % (base_year, period[0], period[_knots[N]])
+        % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel(f"$\\mu(t)$, {base_year}=100")
     plt.ylabel("Fixed Assets Retirement Value, %d=100" % (base_year))
@@ -700,7 +606,7 @@ def run_retirement(
     plt.figure(7)
     plt.title(
         "Labor Capital Intensity, %d=100, %d$-$%d"
-        % (base_year, period[0], period[_knots[N]])
+        % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel(f"Labor Capital Intensity, {base_year}=100")
     plt.ylabel(f"Labor Productivity, {base_year}=100")
@@ -770,42 +676,42 @@ def run_retirement_option(
     # Pi & Pi Switch Points
     ###########################################################################
     pi = []
-    _knots = [0]
+    nodes = [0]
     i = 0
     if N == 1:
-        _knots.append(len(period) - 1)
+        nodes.append(len(period) - 1)
         pi.append(
             float(
                 input(
                     "Define Gamma for Period from %d to %d: "
-                    % (period[_knots[i]], period[_knots[i + 1]])
+                    % (period[nodes[i]], period[nodes[i + 1]])
                 )
             )
         )
     elif N >= 2:
         while i < N:
             if i + 1 == N:
-                _knots.append(len(period) - 1)
+                nodes.append(len(period) - 1)
                 pi.append(
                     float(
                         input(
                             "Define Gamma for Period from %d to %d: "
-                            % (period[_knots[i]], period[_knots[i + 1]])
+                            % (period[nodes[i]], period[nodes[i + 1]])
                         )
                     )
                 )
                 i += 1
             else:
                 y = int(input("Select Row for Year: "))
-                if y > _knots[i]:
-                    _knots.append(y)
+                if y > nodes[i]:
+                    nodes.append(y)
                     pi.append(
                         float(
                             input(
                                 "Define Gamma for Period from %d to %d: "
                                 % (
-                                    period[_knots[i]],
-                                    period[_knots[i + 1]],
+                                    period[nodes[i]],
+                                    period[nodes[i + 1]],
                                 )
                             )
                         )
@@ -818,9 +724,8 @@ def run_retirement_option(
     ###########################################################################
     Y05 = [pd.NA]  # Fixed Assets Retirement Value
     Y06 = [pd.NA]  # Fixed Assets Retirement Ratio
-    if N == 1:
-        j = 0
-        for i in range(_knots[j], _knots[j + 1]):
+    for j in range(N):
+        for i in range(nodes[j], nodes[j + 1]):
             # Fixed Assets Retirement Value
             Y05.append(
                 fixed_assets[i] - fixed_assets[i + 1] + pi[j] * investment[i]
@@ -830,42 +735,6 @@ def run_retirement_option(
                 (fixed_assets[i] - fixed_assets[i + 1] + pi[j] * investment[i])
                 / fixed_assets[i + 1]
             )
-    else:
-        for j in range(N):
-            if j + 1 == N:
-                for i in range(_knots[j], _knots[j + 1]):
-                    # Fixed Assets Retirement Value
-                    Y05.append(
-                        fixed_assets[i]
-                        - fixed_assets[i + 1]
-                        + pi[j] * investment[i]
-                    )
-                    # Fixed Assets Retirement Ratio
-                    Y06.append(
-                        (
-                            fixed_assets[i]
-                            - fixed_assets[i + 1]
-                            + pi[j] * investment[i]
-                        )
-                        / fixed_assets[i + 1]
-                    )
-            else:
-                for i in range(_knots[j], _knots[j + 1]):
-                    # Fixed Assets Retirement Value
-                    Y05.append(
-                        fixed_assets[i]
-                        - fixed_assets[i + 1]
-                        + pi[j] * investment[i]
-                    )
-                    # Fixed Assets Retirement Ratio
-                    Y06.append(
-                        (
-                            fixed_assets[i]
-                            - fixed_assets[i + 1]
-                            + pi[j] * investment[i]
-                        )
-                        / fixed_assets[i + 1]
-                    )
     Y05 = pd.DataFrame(Y05, columns=["Y05"])
     Y06 = pd.DataFrame(Y06, columns=["Y06"])
     df = pd.DataFrame(period, columns=["year"])
@@ -876,19 +745,15 @@ def run_retirement_option(
     df["Y08"] = df["Y06"].diff()
     df["Y08"] = df["Y08"].abs()
     for i in range(N):
-        if i + 1 == N:
-            print(
-                "Model Parameter: Gamma for Period from %d to %d: %f"
-                % (period[_knots[i]], period[_knots[i + 1]], pi[i])
-            )
-        else:
-            print(
-                "Model Parameter: Gamma for Period from %d to %d: %f"
-                % (period[_knots[i]], period[_knots[i + 1]], pi[i])
-            )
+        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
+        print(
+            "Model Parameter: Gamma for Period from "
+            f"{period[nodes[i]]} to {period[end]}: "
+            f"{pi[i]:.6f}"
+        )
     plt.figure(1)
     plt.title(
-        "Product, %d=100, %d$-$%d" % (base_year, period[0], period[_knots[N]])
+        "Product, %d=100, %d$-$%d" % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(f"Product, {base_year}=100")
@@ -896,7 +761,7 @@ def run_retirement_option(
     plt.grid()
     plt.figure(2)
     plt.title(
-        "Capital, %d=100, %d$-$%d" % (base_year, period[0], period[_knots[N]])
+        "Capital, %d=100, %d$-$%d" % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(f"Capital, {base_year}=100")
@@ -905,7 +770,7 @@ def run_retirement_option(
     plt.figure(3)
     plt.title(
         "Fixed Assets Turnover, %d=100, %d$-$%d"
-        % (base_year, period[0], period[_knots[N]])
+        % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(f"Fixed Assets Turnover, {base_year}=100")
@@ -914,7 +779,7 @@ def run_retirement_option(
     plt.figure(4)
     plt.title(
         "Investment to Gross Domestic Product Ratio, %d=100, %d$-$%d"
-        % (base_year, period[0], period[_knots[N]])
+        % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(
@@ -925,7 +790,7 @@ def run_retirement_option(
     plt.figure(5)
     plt.title(
         "$\\mu(t)$, Fixed Assets Retirement Ratio, %d=100, %d$-$%d"
-        % (base_year, period[0], period[_knots[N]])
+        % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel("year")
     plt.ylabel(f"$\\mu(t)$, {base_year}=100")
@@ -934,7 +799,7 @@ def run_retirement_option(
     plt.figure(6)
     plt.title(
         "Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, %d=100, %d$-$%d"
-        % (base_year, period[0], period[_knots[N]])
+        % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel(f"$\\mu(t)$, {base_year}=100")
     plt.ylabel("Fixed Assets Retirement Value, %d=100" % (base_year))
@@ -943,7 +808,7 @@ def run_retirement_option(
     plt.figure(7)
     plt.title(
         "Labor Capital Intensity, %d=100, %d$-$%d"
-        % (base_year, period[0], period[_knots[N]])
+        % (base_year, period[0], period[nodes[N]])
     )
     plt.xlabel(f"Labor Capital Intensity, {base_year}=100")
     plt.ylabel(f"Labor Productivity, {base_year}=100")
@@ -992,30 +857,30 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     # Pi & Pi Switch Points
     ###########################################################################
     pi = []
-    _knots = [0]
+    nodes = [0]
     _ = 0
     if N == 1:
-        _knots.append(df.shape[0] - 1)
+        nodes.append(df.shape[0] - 1)
         pi.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        df.iloc[_knots[_], 0],
-                        df.iloc[:, 0][_knots[_ + 1]],
+                        df.iloc[nodes[_], 0],
+                        df.iloc[:, 0][nodes[_ + 1]],
                     )
                 )
             )
         )
     elif N >= 2:
         while _ < N:
-            if _ == N - 1:
-                _knots.append(df.shape[0] - 1)
+            if _ + 1 == N:
+                nodes.append(df.shape[0] - 1)
                 pi.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                df.iloc[_knots[_], 0],
-                                df.iloc[_knots[_ + 1], 0],
+                                df.iloc[nodes[_], 0],
+                                df.iloc[nodes[_ + 1], 0],
                             )
                         )
                     )
@@ -1023,14 +888,14 @@ def calculate_retirement(df: pd.DataFrame) -> None:
                 _ += 1
             else:
                 y = int(input("Select Row for Year: "))
-                if y > _knots[_]:
-                    _knots.append(y)
+                if y > nodes[_]:
+                    nodes.append(y)
                     pi.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    df.iloc[_knots[_], 0],
-                                    df.iloc[_knots[_ + 1], 0],
+                                    df.iloc[nodes[_], 0],
+                                    df.iloc[nodes[_ + 1], 0],
                                 )
                             )
                         )
@@ -1043,9 +908,8 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     ###########################################################################
     YEE = [pd.NA]  # Fixed Assets Retirement Value
     YFF = [pd.NA]  # Fixed Assets Retirement Ratio
-    if N == 1:
-        j = 0
-        for _ in range(_knots[j], _knots[j + 1]):
+    for j in range(N):
+        for _ in range(nodes[j], nodes[j + 1]):
             # Fixed Assets Retirement Value
             YEE.append(
                 df.iloc[_, 4] - df.iloc[_ + 1, 4] + pi[j] * df.iloc[_, 1]
@@ -1055,42 +919,6 @@ def calculate_retirement(df: pd.DataFrame) -> None:
                 (df.iloc[_, 4] - df.iloc[_ + 1, 4] + pi[j] * df.iloc[_, 1])
                 / df.iloc[_ + 1, 4]
             )
-    else:
-        for j in range(N):
-            if j + 1 == N:
-                for _ in range(_knots[j], _knots[j + 1]):
-                    # Fixed Assets Retirement Value
-                    YEE.append(
-                        df.iloc[_, 4]
-                        - df.iloc[_ + 1, 4]
-                        + pi[j] * df.iloc[_, 1]
-                    )
-                    # Fixed Assets Retirement Ratio
-                    YFF.append(
-                        (
-                            df.iloc[_, 4]
-                            - df.iloc[_ + 1, 4]
-                            + pi[j] * df.iloc[_, 1]
-                        )
-                        / df.iloc[_ + 1, 4]
-                    )
-            else:
-                for _ in range(_knots[j], _knots[j + 1]):
-                    # Fixed Assets Retirement Value
-                    YEE.append(
-                        df.iloc[_, 4]
-                        - df.iloc[_ + 1, 4]
-                        + pi[j] * df.iloc[_, 1]
-                    )
-                    # Fixed Assets Retirement Ratio
-                    YFF.append(
-                        (
-                            df.iloc[_, 4]
-                            - df.iloc[_ + 1, 4]
-                            + pi[j] * df.iloc[_, 1]
-                        )
-                        / df.iloc[_ + 1, 4]
-                    )
     YEE = pd.DataFrame(YEE, columns=["YEE"])
     YFF = pd.DataFrame(YFF, columns=["YFF"])
     result = pd.DataFrame(df.iloc[:, 0], columns=["year"])
@@ -1102,27 +930,17 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     result["YGG"] = result["YGG"].abs()
     result["YHH"] = result["YFF"].diff()
     result["YHH"] = result["YHH"].abs()
-    for _ in range(N):
-        if _ == N - 1:
-            print(
-                "Model Parameter: Pi for Period from {} to {}: {:.6f}".format(
-                    df.iloc[_knots[_], 0],
-                    df.iloc[_knots[_ + 1], 0],
-                    pi[_],
-                )
-            )
-        else:
-            print(
-                "Model Parameter: Pi for Period from {} to {}: {:.6f}".format(
-                    df.iloc[_knots[_], 0],
-                    df.iloc[_knots[_ + 1], 0],
-                    pi[_],
-                )
-            )
+    for i in range(N):
+        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
+        print(
+            "Model Parameter: Pi for Period from "
+            f"{df.iloc[nodes[i], 0]} to {df.iloc[end, 0]}: "
+            f"{pi[i]:.6f}"
+        )
     plt.figure(1)
     plt.title(
         "Product, {} = 100, {}$-${}".format(
-            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[_knots[N], 0]
+            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[nodes[N], 0]
         )
     )
     plt.xlabel("year")
@@ -1132,7 +950,7 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     plt.figure(2)
     plt.title(
         "Capital, {} = 100, {}$-${}".format(
-            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[_knots[N], 0]
+            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[nodes[N], 0]
         )
     )
     plt.xlabel("year")
@@ -1142,7 +960,7 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     plt.figure(3)
     plt.title(
         "Fixed Assets Turnover ($\\lambda$), {} = 100, {}$-${}".format(
-            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[_knots[N], 0]
+            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[nodes[N], 0]
         )
     )
     plt.xlabel("year")
@@ -1156,7 +974,7 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     plt.figure(4)
     plt.title(
         "Investment to Gross Domestic Product Ratio, {} = 100, {}$-${}".format(
-            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[_knots[N], 0]
+            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[nodes[N], 0]
         )
     )
     plt.xlabel("year")
@@ -1170,7 +988,7 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     plt.figure(5)
     plt.title(
         "$\\alpha(t)$, Fixed Assets Retirement Ratio, {} = 100, {}$-${}".format(
-            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[_knots[N], 0]
+            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[nodes[N], 0]
         )
     )
     plt.xlabel("year")
@@ -1180,7 +998,7 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     plt.figure(6)
     plt.title(
         "Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, {} = 100, {}$-${}".format(
-            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[_knots[N], 0]
+            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[nodes[N], 0]
         )
     )
     plt.xlabel("$\\alpha(t)$, {} = 100".format(df.iloc[base_year, 0]))
@@ -1192,7 +1010,7 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     plt.figure(7)
     plt.title(
         "Labor Capital Intensity, {} = 100, {}$-${}".format(
-            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[_knots[N], 0]
+            df.iloc[base_year, 0], df.iloc[0, 0], df.iloc[nodes[N], 0]
         )
     )
     plt.xlabel(
