@@ -94,30 +94,30 @@ def plot_acquisition(df: pd.DataFrame) -> None:
     ###########################################################################
     # Pi & Pi Switch Points
     ###########################################################################
-    pi = []
+    pis = []
     nodes = [0]
-    _ = 0
+    i = 0
     if N == 1:
         nodes.append(_df.index[-1])
-        pi.append(
+        pis.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        _df.iloc[nodes[_], 0], _df.iloc[nodes[_ + 1] - 1, 0]
+                        _df.iloc[nodes[i], 0], _df.iloc[nodes[i + 1] - 1, 0]
                     )
                 )
             )
         )
     elif N >= 2:
-        while _ < N:
-            if _ + 1 == N:
+        while i < N:
+            if i + 1 == N:
                 nodes.append(_df.index[-1])
-                pi.append(
+                pis.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                _df.iloc[nodes[_], 0],
-                                _df.iloc[nodes[_ + 1] - 1, 0],
+                                _df.iloc[nodes[i], 0],
+                                _df.iloc[nodes[i + 1] - 1, 0],
                             )
                         )
                     )
@@ -130,37 +130,37 @@ def plot_acquisition(df: pd.DataFrame) -> None:
                         )
                     )
                 )
-                if node > nodes[_]:
+                if node > nodes[i]:
                     nodes.append(node)
-                    pi.append(
+                    pis.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    _df.iloc[nodes[_], 0],
-                                    _df.iloc[nodes[_ + 1], 0],
+                                    _df.iloc[nodes[i], 0],
+                                    _df.iloc[nodes[i + 1], 0],
                                 )
                             )
                         )
                     )
-            _ += 1
+            i += 1
     else:
         print("Error")
     ###########################################################################
     # Calculate Dynamic Values
     ###########################################################################
-    _calculated = [pd.NA]
+    estimates = [pd.NA]
     for j in range(N):
         for i in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Estimate: GCF[-] or CA[+]
             ###################################################################
-            _calculated.append(
+            estimates.append(
                 _df.iloc[i + 1, 5]
                 - _df.iloc[i, 5]
-                + pi[j] * _df.iloc[i + 1, 1]
+                + pis[j] * _df.iloc[i + 1, 1]
             )
     _df = pd.concat(
-        [_df, pd.DataFrame(_calculated, columns=["_calculated"])], axis=1
+        [_df, pd.DataFrame(estimates, columns=["_calculated"])], axis=1
     )
     _df.set_index(_df.columns[0], inplace=True)
     # {"-": "Gross Capital Formation", "+": "Capital Acquisitions"}
@@ -169,7 +169,7 @@ def plot_acquisition(df: pd.DataFrame) -> None:
         print(
             "Model Parameter: Pi for Period from "
             f"{_df.index[nodes[i]]} to {_df.index[end]}: "
-            f"{pi[i]:.6f}"
+            f"{pis[i]:.6f}"
         )
     plt.figure(1)
     plt.plot(_df.iloc[:, 8], _df.iloc[:, 9])
@@ -299,49 +299,49 @@ def plot_retirement(df: pd.DataFrame) -> None:
     ###########################################################################
     # Pi & Pi Switch Points
     ###########################################################################
-    pi = []
+    pis = []
     nodes = [0]
-    _ = 0
+    i = 0
     if N == 1:
         nodes.append(_df.index[-1])
-        pi.append(
+        pis.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        _df.iloc[nodes[_], 0], _df.iloc[nodes[_ + 1], 0]
+                        _df.iloc[nodes[i], 0], _df.iloc[nodes[i + 1], 0]
                     )
                 )
             )
         )
     elif N >= 2:
-        while _ < N:
-            if _ + 1 == N:
+        while i < N:
+            if i + 1 == N:
                 nodes.append(_df.index[-1])
-                pi.append(
+                pis.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                _df.iloc[nodes[_], 0],
-                                _df.iloc[nodes[_ + 1], 0],
+                                _df.iloc[nodes[i], 0],
+                                _df.iloc[nodes[i + 1], 0],
                             )
                         )
                     )
                 )
             else:
                 node = int(input("Select Row for Year: "))
-                if node > nodes[_]:
+                if node > nodes[i]:
                     nodes.append(node)
-                    pi.append(
+                    pis.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    _df.iloc[nodes[_], 0],
-                                    _df.iloc[nodes[_ + 1], 0],
+                                    _df.iloc[nodes[i], 0],
+                                    _df.iloc[nodes[i + 1], 0],
                                 )
                             )
                         )
                     )
-            _ += 1
+            i += 1
     else:
         print("Error")
     ###########################################################################
@@ -350,31 +350,31 @@ def plot_retirement(df: pd.DataFrame) -> None:
     ###########################################################################
     # Fixed Assets Retirement Value
     ###########################################################################
-    _value = [pd.NA]
+    values = [pd.NA]
     ###########################################################################
     # Fixed Assets Retirement Ratio
     ###########################################################################
-    _ratio = [pd.NA]
+    ratios = [pd.NA]
     for j in range(N):
         for i in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Fixed Assets Retirement Value
             ###################################################################
-            _value.append(
-                _df.iloc[i, 4] - _df.iloc[i + 1, 4] + pi[j] * _df.iloc[i, 1]
+            values.append(
+                _df.iloc[i, 4] - _df.iloc[i + 1, 4] + pis[j] * _df.iloc[i, 1]
             )
             ###################################################################
             # Fixed Assets Retirement Ratio
             ###################################################################
-            _ratio.append(
-                (_df.iloc[i, 4] - _df.iloc[i + 1, 4] + pi[j] * _df.iloc[i, 1])
+            ratios.append(
+                (_df.iloc[i, 4] - _df.iloc[i + 1, 4] + pis[j] * _df.iloc[i, 1])
                 / _df.iloc[i + 1, 4]
             )
     _df = pd.concat(
         [
             _df,
-            pd.DataFrame(_value, columns=["_value"]),
-            pd.DataFrame(_ratio, columns=["_ratio"]),
+            pd.DataFrame(values, columns=["_value"]),
+            pd.DataFrame(ratios, columns=["_ratio"]),
         ],
         axis=1,
     )
@@ -388,7 +388,7 @@ def plot_retirement(df: pd.DataFrame) -> None:
         print(
             "Model Parameter: Pi for Period from "
             f"{_df.index[nodes[i]]} to {_df.index[end]}: "
-            f"{pi[i]:.6f}"
+            f"{pis[i]:.6f}"
         )
     plt.figure(1)
     plt.title("Product, {}=100, {}$-${}".format(_b, *df.index[[0, -1]]))

@@ -87,34 +87,34 @@ def run_acquisition_workflow(
     ###########################################################################
     # Pi & Pi Switch Points
     ###########################################################################
-    pi = []
+    pis = []
     nodes = [0]
-    _ = 0
+    i = 0
     if N == 1:
         nodes.append(len(period) - 1)
-        pi.append(
+        pis.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        period[nodes[_]], period[nodes[_ + 1] - 1]
+                        period[nodes[i]], period[nodes[i + 1] - 1]
                     )
                 )
             )
         )
     elif N >= 2:
-        while _ < N:
-            if _ + 1 == N:
+        while i < N:
+            if i + 1 == N:
                 nodes.append(len(period) - 1)
-                pi.append(
+                pis.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                period[nodes[_]], period[nodes[_ + 1] - 1]
+                                period[nodes[i]], period[nodes[i + 1] - 1]
                             )
                         )
                     )
                 )
-                _ += 1
+                i += 1
             else:
                 node = int(
                     input(
@@ -122,35 +122,35 @@ def run_acquisition_workflow(
                         % (0, period[0])
                     )
                 )
-                if node > nodes[_]:
+                if node > nodes[i]:
                     nodes.append(node)
-                    pi.append(
+                    pis.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    period[nodes[_]], period[nodes[_ + 1]]
+                                    period[nodes[i]], period[nodes[i + 1]]
                                 )
                             )
                         )
                     )
-                    _ += 1
+                    i += 1
     else:
         print("Error")
-    _calculated = [pd.NA]
+    estimates = [pd.NA]
     for j in range(N):
-        for _ in range(nodes[j], nodes[j + 1]):
+        for i in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Estimate: GCF[-] or CA[+]
             ###################################################################
-            _calculated.append(
-                real_fixed_assets[_ + 1]
-                - real_fixed_assets[_]
-                + pi[j] * investment[_ + 1]
+            estimates.append(
+                real_fixed_assets[i + 1]
+                - real_fixed_assets[i]
+                + pis[j] * investment[i + 1]
             )
-    _calculated = pd.DataFrame(_calculated, columns=["Y11"])
+    estimates = pd.DataFrame(estimates, columns=["Y11"])
     df = pd.DataFrame(period, columns=["year"])
     df = pd.concat(
-        [df, Y01, Y02, Y03, Y04, Y05, Y06, Y07, Y08, Y09, Y10, _calculated],
+        [df, Y01, Y02, Y03, Y04, Y05, Y06, Y07, Y08, Y09, Y10, estimates],
         axis=1,
     )
     df.columns = [
@@ -173,7 +173,7 @@ def run_acquisition_workflow(
         print(
             "Model Parameter: Pi for Period from "
             f"{period[nodes[i]]} to {period[end]}: "
-            f"{pi[i]:.6f}"
+            f"{pis[i]:.6f}"
         )
     plt.figure(1)
     plt.plot(Y03, Y04)
@@ -224,7 +224,7 @@ def run_acquisition_workflow(
     plt.ylabel(f"Investment to GDP Ratio, {period[base_year]}=100")
     plt.grid()
     plt.figure(5)
-    plt.plot(_calculated)
+    plt.plot(estimates)
     plt.title(
         "Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), %d=100, {}$-${}".format(
             period[base_year],

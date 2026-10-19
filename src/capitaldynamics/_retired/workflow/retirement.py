@@ -50,48 +50,48 @@ def run_retirement_workflow(
     ###########################################################################
     # Pi & Pi Switch Points
     ###########################################################################
-    pi = []
+    pis = []
     nodes = [0]
-    _ = 0
+    i = 0
     if N == 1:
         nodes.append(len(period) - 1)
-        pi.append(
+        pis.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        period[nodes[_]], period[nodes[_ + 1]]
+                        period[nodes[i]], period[nodes[i + 1]]
                     )
                 )
             )
         )
     elif N >= 2:
-        while _ < N:
-            if _ + 1 == N:
+        while i < N:
+            if i + 1 == N:
                 nodes.append(len(period) - 1)
-                pi.append(
+                pis.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                period[nodes[_]], period[nodes[_ + 1]]
+                                period[nodes[i]], period[nodes[i + 1]]
                             )
                         )
                     )
                 )
-                _ += 1
+                i += 1
             else:
                 node = int(input("Select Row for Year: "))
-                if node > nodes[_]:
+                if node > nodes[i]:
                     nodes.append(node)
-                    pi.append(
+                    pis.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    period[nodes[_]], period[nodes[_ + 1]]
+                                    period[nodes[i]], period[nodes[i + 1]]
                                 )
                             )
                         )
                     )
-                    _ += 1
+                    i += 1
     else:
         print("Error")
     ###########################################################################
@@ -100,30 +100,30 @@ def run_retirement_workflow(
     ###########################################################################
     # Fixed Assets Retirement Value
     ###########################################################################
-    _value = [pd.NA]
+    values = [pd.NA]
     ###########################################################################
     # Fixed Assets Retirement Ratio
     ###########################################################################
-    _ratio = [pd.NA]
+    ratios = [pd.NA]
     for j in range(N):
-        for _ in range(nodes[j], nodes[j + 1]):
+        for i in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Fixed Assets Retirement Value
             ###################################################################
-            _value.append(
-                fixed_assets[_] - fixed_assets[_ + 1] + pi[j] * investment[_]
+            values.append(
+                fixed_assets[i] - fixed_assets[i + 1] + pis[j] * investment[i]
             )
             ###################################################################
             # Fixed Assets Retirement Ratio
             ###################################################################
-            _ratio.append(
-                (fixed_assets[_] - fixed_assets[_ + 1] + pi[j] * investment[_])
-                / fixed_assets[_ + 1]
+            ratios.append(
+                (fixed_assets[i] - fixed_assets[i + 1] + pis[j] * investment[i])
+                / fixed_assets[i + 1]
             )
-    _value = pd.DataFrame(_value, columns=["Y05"])
-    _ratio = pd.DataFrame(_ratio, columns=["Y06"])
+    values = pd.DataFrame(values, columns=["Y05"])
+    ratios = pd.DataFrame(ratios, columns=["Y06"])
     df = pd.DataFrame(period, columns=["year"])
-    df = pd.concat([df, Y01, Y02, Y03, Y04, _value, _ratio], axis=1)
+    df = pd.concat([df, Y01, Y02, Y03, Y04, values, ratios], axis=1)
     df.columns = ("year", "Y01", "Y02", "Y03", "Y04", "Y05", "Y06")
     df["Y07"] = df["Y06"] - df["Y06"].mean()
     df["Y07"] = df["Y07"].abs()
@@ -134,7 +134,7 @@ def run_retirement_workflow(
         print(
             "Model Parameter: Pi for Period from "
             f"{period[nodes[i]]} to {period[end]}: "
-            f"{pi[i]:.6f}"
+            f"{pis[i]:.6f}"
         )
     plt.figure(1)
     plt.title(
@@ -189,7 +189,7 @@ def run_retirement_workflow(
     )
     plt.xlabel("year")
     plt.ylabel(f"$\\mu(t)$, {period[base_year]}=100")
-    plt.plot(_ratio)
+    plt.plot(ratios)
     plt.grid()
     plt.figure(6)
     plt.title(
@@ -200,7 +200,7 @@ def run_retirement_workflow(
     )
     plt.xlabel(f"$\\mu(t)$, {period[base_year]}=100")
     plt.ylabel(f"Fixed Assets Retirement Value, {period[base_year]}=100")
-    plt.plot(_ratio, _value)
+    plt.plot(ratios, values)
     plt.grid()
     plt.figure(7)
     plt.title(

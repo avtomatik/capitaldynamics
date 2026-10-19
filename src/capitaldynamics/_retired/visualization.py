@@ -67,12 +67,12 @@ def run_acquisition(
         print(f"N >= 1 is Required, N = {N} Was Provided")
         return
     print(f"Number of Spans Provided: {N}")
-    pi = []
+    pis = []
     nodes = [start]  # Gamma Switch Points & Gamma
     i = 0
     if N == 1:
         nodes.append(len(period) - 1)
-        pi.append(
+        pis.append(
             float(
                 input(
                     "Define Gamma for Period from %d to %d: "
@@ -84,7 +84,7 @@ def run_acquisition(
         while i < N:
             if i + 1 == N:
                 nodes.append(len(period) - 1)
-                pi.append(
+                pis.append(
                     float(
                         input(
                             "Define Gamma for Period from %d to %d: "
@@ -97,15 +97,15 @@ def run_acquisition(
                 )
                 i += 1
             else:
-                y = int(
+                node = int(
                     input(
                         "Select Row for Year, Should Be More Than %d:=%d: "
                         % (start, period[start])
                     )
                 )
-                if y > nodes[i]:
-                    nodes.append(y)
-                    pi.append(
+                if node > nodes[i]:
+                    nodes.append(node)
+                    pis.append(
                         float(
                             input(
                                 "Define Gamma for Period from %d to %d: "
@@ -126,7 +126,7 @@ def run_acquisition(
             X11.append(
                 fixed_assets[i + 1]
                 - fixed_assets[i]
-                + pi[j] * investment[i + 1]
+                + pis[j] * investment[i + 1]
             )
     X11 = pd.DataFrame(X11, columns=["X11"])
     df = pd.DataFrame(period, columns=["year"])
@@ -153,7 +153,7 @@ def run_acquisition(
         print(
             "Model Parameter: Gamma for Period from "
             f"{period[nodes[i]]} to {period[end]}: "
-            f"{pi[i]:.6f}"
+            f"{pis[i]:.6f}"
         )
     plt.figure(1)
     plt.plot(X03, X04)
@@ -263,65 +263,65 @@ def calculate_acquisition(df: pd.DataFrame) -> None:
     ###########################################################################
     # Pi & Pi Switch Points
     ###########################################################################
-    pi = []
+    pis = []
     nodes = [0]
-    _ = 0
+    i = 0
     if N == 1:
         nodes.append(df.shape[0] - 1)
-        pi.append(
+        pis.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        df.iloc[nodes[_], 0],
-                        df.iloc[nodes[_ + 1] - 1, 0],
+                        df.iloc[nodes[i], 0],
+                        df.iloc[nodes[i + 1] - 1, 0],
                     )
                 )
             )
         )
     elif N >= 2:
-        while _ < N:
-            if _ + 1 == N:
+        while i < N:
+            if i + 1 == N:
                 nodes.append(df.shape[0] - 1)
-                pi.append(
+                pis.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                df.iloc[nodes[_], 0],
-                                df.iloc[nodes[_ + 1] - 1, 0],
+                                df.iloc[nodes[i], 0],
+                                df.iloc[nodes[i + 1] - 1, 0],
                             )
                         )
                     )
                 )
-                _ += 1
+                i += 1
             else:
-                y = int(
+                node = int(
                     input(
                         "Select Row for Year, Should Be More Than {}: = {}: ".format(
                             0, df.iloc[0, 0]
                         )
                     )
                 )
-                if y > nodes[_]:
-                    nodes.append(y)
-                    pi.append(
+                if node > nodes[i]:
+                    nodes.append(node)
+                    pis.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    df.iloc[nodes[_], 0],
-                                    df.iloc[nodes[_ + 1], 0],
+                                    df.iloc[nodes[i], 0],
+                                    df.iloc[nodes[i + 1], 0],
                                 )
                             )
                         )
                     )
-                    _ += 1
+                    i += 1
     else:
         print("Error")
     XKK = [pd.NA]
     for j in range(N):
-        for _ in range(nodes[j], nodes[j + 1]):
+        for i in range(nodes[j], nodes[j + 1]):
             # Estimate: GCF[-] or CA[+]
             XKK.append(
-                df.iloc[_ + 1, 5] - df.iloc[_, 5] + pi[j] * df.iloc[_ + 1, 1]
+                df.iloc[i + 1, 5] - df.iloc[i, 5] + pis[j] * df.iloc[i + 1, 1]
             )
     XKK = pd.DataFrame(XKK, columns=["XKK"])
     result = pd.DataFrame(df.iloc[:, 0], columns=["year"])
@@ -349,7 +349,7 @@ def calculate_acquisition(df: pd.DataFrame) -> None:
         print(
             "Model Parameter: Pi for Period from "
             f"{df.iloc[nodes[i], 0]} to {df.iloc[end, 0]}: "
-            f"{pi[i]:.6f}"
+            f"{pis[i]:.6f}"
         )
     plt.figure(1)
     plt.plot(XCC, XDD)
@@ -469,12 +469,12 @@ def run_retirement(
     ###########################################################################
     # Pi & Pi Switch Points
     ###########################################################################
-    pi = []
+    pis = []
     nodes = [0]
     i = 0
     if N == 1:
         nodes.append(len(period) - 1)
-        pi.append(
+        pis.append(
             float(
                 input(
                     "Define Gamma for Period from %d to %d: "
@@ -486,7 +486,7 @@ def run_retirement(
         while i < N:
             if i + 1 == N:
                 nodes.append(len(period) - 1)
-                pi.append(
+                pis.append(
                     float(
                         input(
                             "Define Gamma for Period from %d to %d: "
@@ -496,10 +496,10 @@ def run_retirement(
                 )
                 i += 1
             else:
-                y = int(input("Select Row for Year: "))
-                if y > nodes[i]:
-                    nodes.append(y)
-                    pi.append(
+                node = int(input("Select Row for Year: "))
+                if node > nodes[i]:
+                    nodes.append(node)
+                    pis.append(
                         float(
                             input(
                                 "Define Gamma for Period from %d to %d: "
@@ -528,11 +528,11 @@ def run_retirement(
         for i in range(nodes[j], nodes[j + 1]):
             # Fixed Assets Retirement Value
             X05.append(
-                fixed_assets[i] - fixed_assets[i + 1] + pi[j] * investment[i]
+                fixed_assets[i] - fixed_assets[i + 1] + pis[j] * investment[i]
             )
             # Fixed Assets Retirement Ratio
             X06.append(
-                (fixed_assets[i] - fixed_assets[i + 1] + pi[j] * investment[i])
+                (fixed_assets[i] - fixed_assets[i + 1] + pis[j] * investment[i])
                 / fixed_assets[i + 1]
             )
     X05 = pd.DataFrame(X05, columns=["X05"])
@@ -549,7 +549,7 @@ def run_retirement(
         print(
             "Model Parameter: Gamma for Period from "
             f"{period[nodes[i]]} to {period[end]}: "
-            f"{pi[i]:.6f}"
+            f"{pis[i]:.6f}"
         )
     plt.figure(1)
     plt.title(
@@ -675,12 +675,12 @@ def run_retirement_option(
     ###########################################################################
     # Pi & Pi Switch Points
     ###########################################################################
-    pi = []
+    pis = []
     nodes = [0]
     i = 0
     if N == 1:
         nodes.append(len(period) - 1)
-        pi.append(
+        pis.append(
             float(
                 input(
                     "Define Gamma for Period from %d to %d: "
@@ -692,7 +692,7 @@ def run_retirement_option(
         while i < N:
             if i + 1 == N:
                 nodes.append(len(period) - 1)
-                pi.append(
+                pis.append(
                     float(
                         input(
                             "Define Gamma for Period from %d to %d: "
@@ -702,10 +702,10 @@ def run_retirement_option(
                 )
                 i += 1
             else:
-                y = int(input("Select Row for Year: "))
-                if y > nodes[i]:
-                    nodes.append(y)
-                    pi.append(
+                node = int(input("Select Row for Year: "))
+                if node > nodes[i]:
+                    nodes.append(node)
+                    pis.append(
                         float(
                             input(
                                 "Define Gamma for Period from %d to %d: "
@@ -728,11 +728,11 @@ def run_retirement_option(
         for i in range(nodes[j], nodes[j + 1]):
             # Fixed Assets Retirement Value
             Y05.append(
-                fixed_assets[i] - fixed_assets[i + 1] + pi[j] * investment[i]
+                fixed_assets[i] - fixed_assets[i + 1] + pis[j] * investment[i]
             )
             # Fixed Assets Retirement Ratio
             Y06.append(
-                (fixed_assets[i] - fixed_assets[i + 1] + pi[j] * investment[i])
+                (fixed_assets[i] - fixed_assets[i + 1] + pis[j] * investment[i])
                 / fixed_assets[i + 1]
             )
     Y05 = pd.DataFrame(Y05, columns=["Y05"])
@@ -749,7 +749,7 @@ def run_retirement_option(
         print(
             "Model Parameter: Gamma for Period from "
             f"{period[nodes[i]]} to {period[end]}: "
-            f"{pi[i]:.6f}"
+            f"{pis[i]:.6f}"
         )
     plt.figure(1)
     plt.title(
@@ -856,51 +856,51 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     ###########################################################################
     # Pi & Pi Switch Points
     ###########################################################################
-    pi = []
+    pis = []
     nodes = [0]
-    _ = 0
+    i = 0
     if N == 1:
         nodes.append(df.shape[0] - 1)
-        pi.append(
+        pis.append(
             float(
                 input(
                     "Define Pi for Period from {} to {}: ".format(
-                        df.iloc[nodes[_], 0],
-                        df.iloc[:, 0][nodes[_ + 1]],
+                        df.iloc[nodes[i], 0],
+                        df.iloc[:, 0][nodes[i + 1]],
                     )
                 )
             )
         )
     elif N >= 2:
-        while _ < N:
-            if _ + 1 == N:
+        while i < N:
+            if i + 1 == N:
                 nodes.append(df.shape[0] - 1)
-                pi.append(
+                pis.append(
                     float(
                         input(
                             "Define Pi for Period from {} to {}: ".format(
-                                df.iloc[nodes[_], 0],
-                                df.iloc[nodes[_ + 1], 0],
+                                df.iloc[nodes[i], 0],
+                                df.iloc[nodes[i + 1], 0],
                             )
                         )
                     )
                 )
-                _ += 1
+                i += 1
             else:
-                y = int(input("Select Row for Year: "))
-                if y > nodes[_]:
-                    nodes.append(y)
-                    pi.append(
+                node = int(input("Select Row for Year: "))
+                if node > nodes[i]:
+                    nodes.append(node)
+                    pis.append(
                         float(
                             input(
                                 "Define Pi for Period from {} to {}: ".format(
-                                    df.iloc[nodes[_], 0],
-                                    df.iloc[nodes[_ + 1], 0],
+                                    df.iloc[nodes[i], 0],
+                                    df.iloc[nodes[i + 1], 0],
                                 )
                             )
                         )
                     )
-                    _ += 1
+                    i += 1
     else:
         print("Error")
     ###########################################################################
@@ -909,15 +909,15 @@ def calculate_retirement(df: pd.DataFrame) -> None:
     YEE = [pd.NA]  # Fixed Assets Retirement Value
     YFF = [pd.NA]  # Fixed Assets Retirement Ratio
     for j in range(N):
-        for _ in range(nodes[j], nodes[j + 1]):
+        for i in range(nodes[j], nodes[j + 1]):
             # Fixed Assets Retirement Value
             YEE.append(
-                df.iloc[_, 4] - df.iloc[_ + 1, 4] + pi[j] * df.iloc[_, 1]
+                df.iloc[i, 4] - df.iloc[i + 1, 4] + pis[j] * df.iloc[i, 1]
             )
             # Fixed Assets Retirement Ratio
             YFF.append(
-                (df.iloc[_, 4] - df.iloc[_ + 1, 4] + pi[j] * df.iloc[_, 1])
-                / df.iloc[_ + 1, 4]
+                (df.iloc[i, 4] - df.iloc[i + 1, 4] + pis[j] * df.iloc[i, 1])
+                / df.iloc[i + 1, 4]
             )
     YEE = pd.DataFrame(YEE, columns=["YEE"])
     YFF = pd.DataFrame(YFF, columns=["YFF"])
@@ -935,7 +935,7 @@ def calculate_retirement(df: pd.DataFrame) -> None:
         print(
             "Model Parameter: Pi for Period from "
             f"{df.iloc[nodes[i], 0]} to {df.iloc[end, 0]}: "
-            f"{pi[i]:.6f}"
+            f"{pis[i]:.6f}"
         )
     plt.figure(1)
     plt.title(
