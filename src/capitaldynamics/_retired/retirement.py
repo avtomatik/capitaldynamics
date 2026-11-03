@@ -1,6 +1,6 @@
 from capitaldynamics.data.loader import load_data
 
-from .visualization import run_retirement
+from .visualization import analyze_capital_retirement
 
 COLUMNS = [
     "real_investment",
@@ -21,7 +21,7 @@ COLUMNS = [
 
 def main() -> None:
     data = load_data()
-    data.loc[:, COLUMNS].pipe(run_retirement)
+    data.loc[:, COLUMNS].pipe(analyze_capital_retirement)
 
 
 if __name__ == "__main__":

@@ -148,7 +148,7 @@ def run_acquisition_workflow(
                 - real_fixed_assets[i]
                 + gammas[j] * investment[i + 1]
             )
-    estimates = pd.DataFrame(estimates, columns=["YKK"])
+    estimates = pd.DataFrame(estimates, columns=["estimates"])
     df = pd.DataFrame(period, columns=["year"])
     df = pd.concat(
         [df, YAA, YBB, YCC, YDD, YEE, YFF, YGG, YHH, YII, YJJ, estimates],
@@ -166,7 +166,7 @@ def run_acquisition_workflow(
         "YHH",
         "YII",
         "YJJ",
-        "YKK",
+        "estimates",
     ]
     # {"-": "Gross Capital Formation", "+": "Capital Acquisitions"}
     for i in range(number_of_segments):

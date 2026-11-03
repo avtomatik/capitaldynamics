@@ -381,8 +381,8 @@ def plot_retirement(df: pd.DataFrame) -> None:
     _df = pd.concat(
         [
             _df,
-            pd.DataFrame(values, columns=["_value"]),
-            pd.DataFrame(ratios, columns=["_ratio"]),
+            pd.DataFrame(values, columns=["values"]),
+            pd.DataFrame(ratios, columns=["ratios"]),
         ],
         axis=1,
     )
