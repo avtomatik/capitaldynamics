@@ -26,7 +26,7 @@ def plot_acquisition(df: pd.DataFrame) -> None:
         Draws matplotlib.pyplot Plots.
     """
     _df = df.reset_index(level=0).copy()
-    _df.columns = ("year", *_df.columns[1:])
+    _df.columns = ["year", *_df.columns[1:]]
     ###########################################################################
     # Basic Year
     ###########################################################################
@@ -83,39 +83,40 @@ def plot_acquisition(df: pd.DataFrame) -> None:
     ###########################################################################
     # Calculate Dynamic Values
     ###########################################################################
-    ###########################################################################
-    # Number of Spans
-    ###########################################################################
-    N = int(input("Define Number of Line Spans for Pi (N, N >= 1): "))
-    if N < 1:
-        print(f"N >= 1 is Required, N = {N} Was Provided")
+    number_of_segments = int(
+        input("Enter the number of line segments for Gamma (must be >= 1): ")
+    )
+    if number_of_segments < 1:
+        print(
+            f"At least 1 line segment is required; received {number_of_segments}."
+        )
         return
-    print(f"Number of Spans Provided: {N}")
+    print(f"Number of line segments provided: {number_of_segments}.")
     ###########################################################################
-    # Pi & Pi Switch Points
+    # Gamma & Gamma Switch Points
     ###########################################################################
-    pis = []
+    gammas = []
     nodes = [0]
     i = 0
-    if N == 1:
+    if number_of_segments == 1:
         nodes.append(_df.index[-1])
-        pis.append(
+        gammas.append(
             float(
                 input(
-                    "Define Pi for Period from {} to {}: ".format(
+                    "Define Gamma for Period from {} to {}: ".format(
                         _df.iloc[nodes[i], 0], _df.iloc[nodes[i + 1] - 1, 0]
                     )
                 )
             )
         )
-    elif N >= 2:
-        while i < N:
-            if i + 1 == N:
+    elif number_of_segments >= 2:
+        while i < number_of_segments:
+            if i + 1 == number_of_segments:
                 nodes.append(_df.index[-1])
-                pis.append(
+                gammas.append(
                     float(
                         input(
-                            "Define Pi for Period from {} to {}: ".format(
+                            "Define Gamma for Period from {} to {}: ".format(
                                 _df.iloc[nodes[i], 0],
                                 _df.iloc[nodes[i + 1] - 1, 0],
                             )
@@ -132,10 +133,10 @@ def plot_acquisition(df: pd.DataFrame) -> None:
                 )
                 if node > nodes[i]:
                     nodes.append(node)
-                    pis.append(
+                    gammas.append(
                         float(
                             input(
-                                "Define Pi for Period from {} to {}: ".format(
+                                "Define Gamma for Period from {} to {}: ".format(
                                     _df.iloc[nodes[i], 0],
                                     _df.iloc[nodes[i + 1], 0],
                                 )
@@ -149,7 +150,7 @@ def plot_acquisition(df: pd.DataFrame) -> None:
     # Calculate Dynamic Values
     ###########################################################################
     estimates = [pd.NA]
-    for j in range(N):
+    for j in range(number_of_segments):
         for i in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Estimate: GCF[-] or CA[+]
@@ -157,19 +158,19 @@ def plot_acquisition(df: pd.DataFrame) -> None:
             estimates.append(
                 _df.iloc[i + 1, 5]
                 - _df.iloc[i, 5]
-                + pis[j] * _df.iloc[i + 1, 1]
+                + gammas[j] * _df.iloc[i + 1, 1]
             )
     _df = pd.concat(
         [_df, pd.DataFrame(estimates, columns=["_calculated"])], axis=1
     )
     _df.set_index(_df.columns[0], inplace=True)
     # {"-": "Gross Capital Formation", "+": "Capital Acquisitions"}
-    for i in range(N):
-        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
+    for i in range(number_of_segments):
+        end = nodes[i + 1] - 1 if i == number_of_segments - 1 else nodes[i + 1]
         print(
-            "Model Parameter: Pi for Period from "
+            "Model Parameter: Gamma for Period from "
             f"{_df.index[nodes[i]]} to {_df.index[end]}: "
-            f"{pis[i]:.6f}"
+            f"{gammas[i]:.6f}"
         )
     plt.figure(1)
     plt.plot(_df.iloc[:, 8], _df.iloc[:, 9])
@@ -248,7 +249,7 @@ def plot_retirement(df: pd.DataFrame) -> None:
         Draws matplotlib.pyplot Plots.
     """
     _df = df.reset_index(level=0).copy()
-    _df.columns = ("year", *_df.columns[1:])
+    _df.columns = ["year", *_df.columns[1:]]
     ###########################################################################
     # Basic Year
     ###########################################################################
@@ -288,39 +289,40 @@ def plot_retirement(df: pd.DataFrame) -> None:
     # Fixed Assets Turnover Ratio
     ###########################################################################
     _df["c_turnover"] = _df.iloc[:, 3].div(_df.iloc[:, 4])
-    ###########################################################################
-    # Number of Spans
-    ###########################################################################
-    N = int(input("Define Number of Line Segments for Pi: "))
-    if N < 1:
-        print(f"N >= 1 is Required, N = {N} Was Provided")
+    number_of_segments = int(
+        input("Enter the number of line segments for Gamma (must be >= 1): ")
+    )
+    if number_of_segments < 1:
+        print(
+            f"At least 1 line segment is required; received {number_of_segments}."
+        )
         return
-    print(f"Number of Spans Provided: {N}")
+    print(f"Number of line segments provided: {number_of_segments}.")
     ###########################################################################
-    # Pi & Pi Switch Points
+    # Gamma & Gamma Switch Points
     ###########################################################################
-    pis = []
+    gammas = []
     nodes = [0]
     i = 0
-    if N == 1:
+    if number_of_segments == 1:
         nodes.append(_df.index[-1])
-        pis.append(
+        gammas.append(
             float(
                 input(
-                    "Define Pi for Period from {} to {}: ".format(
+                    "Define Gamma for Period from {} to {}: ".format(
                         _df.iloc[nodes[i], 0], _df.iloc[nodes[i + 1], 0]
                     )
                 )
             )
         )
-    elif N >= 2:
-        while i < N:
-            if i + 1 == N:
+    elif number_of_segments >= 2:
+        while i < number_of_segments:
+            if i + 1 == number_of_segments:
                 nodes.append(_df.index[-1])
-                pis.append(
+                gammas.append(
                     float(
                         input(
-                            "Define Pi for Period from {} to {}: ".format(
+                            "Define Gamma for Period from {} to {}: ".format(
                                 _df.iloc[nodes[i], 0],
                                 _df.iloc[nodes[i + 1], 0],
                             )
@@ -331,10 +333,10 @@ def plot_retirement(df: pd.DataFrame) -> None:
                 node = int(input("Select Row for Year: "))
                 if node > nodes[i]:
                     nodes.append(node)
-                    pis.append(
+                    gammas.append(
                         float(
                             input(
-                                "Define Pi for Period from {} to {}: ".format(
+                                "Define Gamma for Period from {} to {}: ".format(
                                     _df.iloc[nodes[i], 0],
                                     _df.iloc[nodes[i + 1], 0],
                                 )
@@ -355,19 +357,25 @@ def plot_retirement(df: pd.DataFrame) -> None:
     # Fixed Assets Retirement Ratio
     ###########################################################################
     ratios = [pd.NA]
-    for j in range(N):
+    for j in range(number_of_segments):
         for i in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Fixed Assets Retirement Value
             ###################################################################
             values.append(
-                _df.iloc[i, 4] - _df.iloc[i + 1, 4] + pis[j] * _df.iloc[i, 1]
+                _df.iloc[i, 4]
+                - _df.iloc[i + 1, 4]
+                + gammas[j] * _df.iloc[i, 1]
             )
             ###################################################################
             # Fixed Assets Retirement Ratio
             ###################################################################
             ratios.append(
-                (_df.iloc[i, 4] - _df.iloc[i + 1, 4] + pis[j] * _df.iloc[i, 1])
+                (
+                    _df.iloc[i, 4]
+                    - _df.iloc[i + 1, 4]
+                    + gammas[j] * _df.iloc[i, 1]
+                )
                 / _df.iloc[i + 1, 4]
             )
     _df = pd.concat(
@@ -383,12 +391,12 @@ def plot_retirement(df: pd.DataFrame) -> None:
         _df.iloc[:, 10].sub(_df.iloc[:, 10].mean()).abs()
     )
     _df["_ratio_increment_abs"] = _df.iloc[:, 10].diff().abs()
-    for i in range(N):
-        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
+    for i in range(number_of_segments):
+        end = nodes[i + 1] - 1 if i == number_of_segments - 1 else nodes[i + 1]
         print(
-            "Model Parameter: Pi for Period from "
+            "Model Parameter: Gamma for Period from "
             f"{_df.index[nodes[i]]} to {_df.index[end]}: "
-            f"{pis[i]:.6f}"
+            f"{gammas[i]:.6f}"
         )
     plt.figure(1)
     plt.title("Product, {}=100, {}$-${}".format(_b, *df.index[[0, -1]]))

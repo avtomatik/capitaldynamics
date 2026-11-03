@@ -24,54 +24,55 @@ def run_retirement_workflow(
     ###########################################################################
     # Log Labor Capital Intensity, LN((K/L)/(K0/L0))
     ###########################################################################
-    Y01 = np.log(fixed_assets * labor[0] / (fixed_assets[0] * labor))
+    YAA = np.log(fixed_assets * labor[0] / (fixed_assets[0] * labor))
     ###########################################################################
     # Log Labor Productivity, LN((Y/L)/(Y0/L0))
     ###########################################################################
-    Y02 = np.log(real_production * labor[0] / (real_production[0] * labor))
+    YBB = np.log(real_production * labor[0] / (real_production[0] * labor))
     ###########################################################################
     # Investment to Gross Domestic Product Ratio, (I/Y)/(I0/Y0)
     ###########################################################################
-    Y03 = investment * real_production[0] / (investment[0] * real_production)
+    YCC = investment * real_production[0] / (investment[0] * real_production)
     ###########################################################################
     # Fixed Assets Turnover Ratio
     ###########################################################################
-    Y04 = real_production / fixed_assets
-    Y01 = pd.DataFrame(Y01, columns=["Y01"])
-    Y02 = pd.DataFrame(Y02, columns=["Y02"])
-    ###########################################################################
-    # Number of Spans
-    ###########################################################################
-    N = int(input("Define Number of Line Segments for Pi: "))
-    if N < 1:
-        print(f"N >= 1 is Required, N = {N} Was Provided")
+    YDD = real_production / fixed_assets
+    YAA = pd.DataFrame(YAA, columns=["YAA"])
+    YBB = pd.DataFrame(YBB, columns=["YBB"])
+    number_of_segments = int(
+        input("Enter the number of line segments for Gamma (must be >= 1): ")
+    )
+    if number_of_segments < 1:
+        print(
+            f"At least 1 line segment is required; received {number_of_segments}."
+        )
         return
-    print(f"Number of Spans Provided: {N}")
+    print(f"Number of line segments provided: {number_of_segments}.")
     ###########################################################################
-    # Pi & Pi Switch Points
+    # Gamma & Gamma Switch Points
     ###########################################################################
-    pis = []
+    gammas = []
     nodes = [0]
     i = 0
-    if N == 1:
+    if number_of_segments == 1:
         nodes.append(len(period) - 1)
-        pis.append(
+        gammas.append(
             float(
                 input(
-                    "Define Pi for Period from {} to {}: ".format(
+                    "Define Gamma for Period from {} to {}: ".format(
                         period[nodes[i]], period[nodes[i + 1]]
                     )
                 )
             )
         )
-    elif N >= 2:
-        while i < N:
-            if i + 1 == N:
+    elif number_of_segments >= 2:
+        while i < number_of_segments:
+            if i + 1 == number_of_segments:
                 nodes.append(len(period) - 1)
-                pis.append(
+                gammas.append(
                     float(
                         input(
-                            "Define Pi for Period from {} to {}: ".format(
+                            "Define Gamma for Period from {} to {}: ".format(
                                 period[nodes[i]], period[nodes[i + 1]]
                             )
                         )
@@ -82,10 +83,10 @@ def run_retirement_workflow(
                 node = int(input("Select Row for Year: "))
                 if node > nodes[i]:
                     nodes.append(node)
-                    pis.append(
+                    gammas.append(
                         float(
                             input(
-                                "Define Pi for Period from {} to {}: ".format(
+                                "Define Gamma for Period from {} to {}: ".format(
                                     period[nodes[i]], period[nodes[i + 1]]
                                 )
                             )
@@ -105,36 +106,42 @@ def run_retirement_workflow(
     # Fixed Assets Retirement Ratio
     ###########################################################################
     ratios = [pd.NA]
-    for j in range(N):
+    for j in range(number_of_segments):
         for i in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Fixed Assets Retirement Value
             ###################################################################
             values.append(
-                fixed_assets[i] - fixed_assets[i + 1] + pis[j] * investment[i]
+                fixed_assets[i]
+                - fixed_assets[i + 1]
+                + gammas[j] * investment[i]
             )
             ###################################################################
             # Fixed Assets Retirement Ratio
             ###################################################################
             ratios.append(
-                (fixed_assets[i] - fixed_assets[i + 1] + pis[j] * investment[i])
+                (
+                    fixed_assets[i]
+                    - fixed_assets[i + 1]
+                    + gammas[j] * investment[i]
+                )
                 / fixed_assets[i + 1]
             )
-    values = pd.DataFrame(values, columns=["Y05"])
-    ratios = pd.DataFrame(ratios, columns=["Y06"])
+    values = pd.DataFrame(values, columns=["YEE"])
+    ratios = pd.DataFrame(ratios, columns=["YFF"])
     df = pd.DataFrame(period, columns=["year"])
-    df = pd.concat([df, Y01, Y02, Y03, Y04, values, ratios], axis=1)
-    df.columns = ("year", "Y01", "Y02", "Y03", "Y04", "Y05", "Y06")
-    df["Y07"] = df["Y06"] - df["Y06"].mean()
-    df["Y07"] = df["Y07"].abs()
-    df["Y08"] = df["Y06"].diff()
-    df["Y08"] = df["Y08"].abs()
-    for i in range(N):
-        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
+    df = pd.concat([df, YAA, YBB, YCC, YDD, values, ratios], axis=1)
+    df.columns = ["year", "YAA", "YBB", "YCC", "YDD", "YEE", "YFF"]
+    df["YGG"] = df["YFF"] - df["YFF"].mean()
+    df["YGG"] = df["YGG"].abs()
+    df["YHH"] = df["YFF"].diff()
+    df["YHH"] = df["YHH"].abs()
+    for i in range(number_of_segments):
+        end = nodes[i + 1] - 1 if i == number_of_segments - 1 else nodes[i + 1]
         print(
-            "Model Parameter: Pi for Period from "
+            "Model Parameter: Gamma for Period from "
             f"{period[nodes[i]]} to {period[end]}: "
-            f"{pis[i]:.6f}"
+            f"{gammas[i]:.6f}"
         )
     plt.figure(1)
     plt.title(
@@ -178,7 +185,7 @@ def run_retirement_workflow(
     )
     plt.xlabel("year")
     plt.ylabel(f"Investment to GDP Ratio, {period[base_year]}=100")
-    plt.plot(Y03)
+    plt.plot(YCC)
     plt.grid()
     plt.figure(5)
     plt.title(
@@ -211,6 +218,6 @@ def run_retirement_workflow(
     )
     plt.xlabel(f"Labor Capital Intensity, {period[base_year]}=100")
     plt.ylabel(f"Labor Productivity, {period[base_year]}=100")
-    plt.plot(np.exp(Y01), np.exp(Y02))
+    plt.plot(np.exp(YAA), np.exp(YBB))
     plt.grid()
     plt.show()

@@ -25,35 +25,35 @@ def run_acquisition_workflow(
     ###########################################################################
     # Fixed Assets Turnover Ratio
     ###########################################################################
-    Y01 = real_production / real_fixed_assets
+    YAA = real_production / real_fixed_assets
     ###########################################################################
     # Investment to Gross Domestic Product Ratio, (I/Y)/(I0/Y0)
     ###########################################################################
-    Y02 = investment * real_production[0] / (investment[0] * real_production)
+    YBB = investment * real_production[0] / (investment[0] * real_production)
     ###########################################################################
     # Labor Capital Intensity
     ###########################################################################
-    Y03 = real_fixed_assets * labor[0] / (real_fixed_assets[0] * labor)
+    YCC = real_fixed_assets * labor[0] / (real_fixed_assets[0] * labor)
     ###########################################################################
     # Labor Productivity
     ###########################################################################
-    Y04 = real_production * labor[0] / (real_production[0] * labor)
+    YDD = real_production * labor[0] / (real_production[0] * labor)
     ###########################################################################
     # Log Labor Capital Intensity, LN((K/L)/(K0/L0))
     ###########################################################################
-    Y05 = np.log(Y03)
+    YEE = np.log(YCC)
     ###########################################################################
     # Log Labor Productivity, LN((Y/L)/(Y0/L0))
     ###########################################################################
-    Y06 = np.log(Y04)
+    YFF = np.log(YDD)
     ###########################################################################
     # Max: Fixed Assets Turnover Ratio
     ###########################################################################
-    Y07 = full_capacity_production / real_fixed_assets
+    YGG = full_capacity_production / real_fixed_assets
     ###########################################################################
     # Max: Investment to Gross Domestic Product Ratio
     ###########################################################################
-    Y08 = (
+    YHH = (
         investment
         * full_capacity_production[0]
         / (investment[0] * full_capacity_production)
@@ -61,7 +61,7 @@ def run_acquisition_workflow(
     ###########################################################################
     # Max: Labor Productivity
     ###########################################################################
-    Y09 = (
+    YII = (
         full_capacity_production
         * labor[0]
         / (full_capacity_production[0] * labor)
@@ -69,46 +69,47 @@ def run_acquisition_workflow(
     ###########################################################################
     # Max: Log Labor Productivity
     ###########################################################################
-    Y10 = np.log(Y09)
-    Y05 = pd.DataFrame(Y05, columns=["Y05"])
-    Y06 = pd.DataFrame(Y06, columns=["Y06"])
-    Y10 = pd.DataFrame(Y10, columns=["Y10"])
+    YJJ = np.log(YII)
+    YEE = pd.DataFrame(YEE, columns=["YEE"])
+    YFF = pd.DataFrame(YFF, columns=["YFF"])
+    YJJ = pd.DataFrame(YJJ, columns=["YJJ"])
     ###########################################################################
     # Calculate Dynamic Values
     ###########################################################################
-    ###########################################################################
-    # Number of Spans
-    ###########################################################################
-    N = int(input("Define Number of Line Segments for Pi: "))
-    if N < 1:
-        print(f"N >= 1 is Required, N = {N} Was Provided")
+    number_of_segments = int(
+        input("Enter the number of line segments for Gamma (must be >= 1): ")
+    )
+    if number_of_segments < 1:
+        print(
+            f"At least 1 line segment is required; received {number_of_segments}."
+        )
         return
-    print(f"Number of Spans Provided: {N}")
+    print(f"Number of line segments provided: {number_of_segments}.")
     ###########################################################################
-    # Pi & Pi Switch Points
+    # Gamma & Gamma Switch Points
     ###########################################################################
-    pis = []
+    gammas = []
     nodes = [0]
     i = 0
-    if N == 1:
+    if number_of_segments == 1:
         nodes.append(len(period) - 1)
-        pis.append(
+        gammas.append(
             float(
                 input(
-                    "Define Pi for Period from {} to {}: ".format(
+                    "Define Gamma for Period from {} to {}: ".format(
                         period[nodes[i]], period[nodes[i + 1] - 1]
                     )
                 )
             )
         )
-    elif N >= 2:
-        while i < N:
-            if i + 1 == N:
+    elif number_of_segments >= 2:
+        while i < number_of_segments:
+            if i + 1 == number_of_segments:
                 nodes.append(len(period) - 1)
-                pis.append(
+                gammas.append(
                     float(
                         input(
-                            "Define Pi for Period from {} to {}: ".format(
+                            "Define Gamma for Period from {} to {}: ".format(
                                 period[nodes[i]], period[nodes[i + 1] - 1]
                             )
                         )
@@ -124,10 +125,10 @@ def run_acquisition_workflow(
                 )
                 if node > nodes[i]:
                     nodes.append(node)
-                    pis.append(
+                    gammas.append(
                         float(
                             input(
-                                "Define Pi for Period from {} to {}: ".format(
+                                "Define Gamma for Period from {} to {}: ".format(
                                     period[nodes[i]], period[nodes[i + 1]]
                                 )
                             )
@@ -137,7 +138,7 @@ def run_acquisition_workflow(
     else:
         print("Error")
     estimates = [pd.NA]
-    for j in range(N):
+    for j in range(number_of_segments):
         for i in range(nodes[j], nodes[j + 1]):
             ###################################################################
             # Estimate: GCF[-] or CA[+]
@@ -145,39 +146,39 @@ def run_acquisition_workflow(
             estimates.append(
                 real_fixed_assets[i + 1]
                 - real_fixed_assets[i]
-                + pis[j] * investment[i + 1]
+                + gammas[j] * investment[i + 1]
             )
-    estimates = pd.DataFrame(estimates, columns=["Y11"])
+    estimates = pd.DataFrame(estimates, columns=["YKK"])
     df = pd.DataFrame(period, columns=["year"])
     df = pd.concat(
-        [df, Y01, Y02, Y03, Y04, Y05, Y06, Y07, Y08, Y09, Y10, estimates],
+        [df, YAA, YBB, YCC, YDD, YEE, YFF, YGG, YHH, YII, YJJ, estimates],
         axis=1,
     )
     df.columns = [
         "year",
-        "Y01",
-        "Y02",
-        "Y03",
-        "Y04",
-        "Y05",
-        "Y06",
-        "Y07",
-        "Y08",
-        "Y09",
-        "Y10",
-        "Y11",
+        "YAA",
+        "YBB",
+        "YCC",
+        "YDD",
+        "YEE",
+        "YFF",
+        "YGG",
+        "YHH",
+        "YII",
+        "YJJ",
+        "YKK",
     ]
     # {"-": "Gross Capital Formation", "+": "Capital Acquisitions"}
-    for i in range(N):
-        end = nodes[i + 1] - 1 if i == N - 1 else nodes[i + 1]
+    for i in range(number_of_segments):
+        end = nodes[i + 1] - 1 if i == number_of_segments - 1 else nodes[i + 1]
         print(
-            "Model Parameter: Pi for Period from "
+            "Model Parameter: Gamma for Period from "
             f"{period[nodes[i]]} to {period[end]}: "
-            f"{pis[i]:.6f}"
+            f"{gammas[i]:.6f}"
         )
     plt.figure(1)
-    plt.plot(Y03, Y04)
-    plt.plot(Y03, Y09)
+    plt.plot(YCC, YDD)
+    plt.plot(YCC, YII)
     plt.title(
         "Labor Productivity, Observed & Max, %d=100, {}$-${}".format(
             period[base_year],
@@ -188,8 +189,8 @@ def run_acquisition_workflow(
     plt.ylabel(f"Labor Productivity, {period[base_year]}=100")
     plt.grid()
     plt.figure(2)
-    plt.plot(Y05, Y06)
-    plt.plot(Y05, Y10)
+    plt.plot(YEE, YFF)
+    plt.plot(YEE, YJJ)
     plt.title(
         "Log Labor Productivity, Observed & Max, %d=100, {}$-${}".format(
             period[base_year],
@@ -200,8 +201,8 @@ def run_acquisition_workflow(
     plt.ylabel(f"Log Labor Productivity, {period[base_year]}=100")
     plt.grid()
     plt.figure(3)
-    plt.plot(Y01)
-    plt.plot(Y07)
+    plt.plot(YAA)
+    plt.plot(YGG)
     plt.title(
         "Fixed Assets Turnover, Observed & Max, %d=100, {}$-${}".format(
             period[base_year],
@@ -212,8 +213,8 @@ def run_acquisition_workflow(
     plt.ylabel(f"Fixed Assets Turnover, {period[base_year]}=100")
     plt.grid()
     plt.figure(4)
-    plt.plot(Y02)
-    plt.plot(Y08)
+    plt.plot(YBB)
+    plt.plot(YHH)
     plt.title(
         "Investment to Gross Domestic Product Ratio,\nObserved & Max, %d=100, {}$-${}".format(
             period[base_year],
