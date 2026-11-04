@@ -1,6 +1,5 @@
 from capitaldynamics.data.loader import load_data
-
-from .workflow.retirement import analyze_capital_retirement
+from capitaldynamics.workflow.retirement import analyze_capital_retirement
 
 COLUMNS = [
     "real_investment",
