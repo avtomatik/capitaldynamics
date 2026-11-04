@@ -3,15 +3,26 @@ import numpy as np
 import pandas as pd
 
 
-def run_acquisition_workflow(
-    period,
-    investment,
-    nominal_production,
-    real_production,
-    full_capacity_production,
-    real_fixed_assets,
-    labor,
-) -> None:
+def analyze_capital_acquisition(df: pd.DataFrame) -> None:
+    """
+    Calculate and visualize capital acquisition indicators.
+
+    Expected DataFrame structure:
+        index: Year
+        column 0: Nominal Investment
+        column 1: Nominal Production
+        column 2: Real Production
+        column 3: Full Capacity Production
+        column 4: Real Capital
+        column 5: Labor
+    """
+    period = df.index.to_numpy()
+    investment = df.iloc[:, 0].to_numpy()
+    nominal_production = df.iloc[:, 1].to_numpy()
+    real_production = df.iloc[:, 2].to_numpy()
+    full_capacity_production = df.iloc[:, 3].to_numpy()
+    real_fixed_assets = df.iloc[:, 4].to_numpy()
+    labor = df.iloc[:, 5].to_numpy()
     ###########################################################################
     # Define Basic Year for Deflator
     ###########################################################################
@@ -22,53 +33,23 @@ def run_acquisition_workflow(
     ###########################################################################
     # Calculate Static Values
     ###########################################################################
-    ###########################################################################
-    # Fixed Assets Turnover Ratio
-    ###########################################################################
     YAA = real_production / real_fixed_assets
-    ###########################################################################
-    # Investment to Gross Domestic Product Ratio, (I/Y)/(I0/Y0)
-    ###########################################################################
     YBB = investment * real_production[0] / (investment[0] * real_production)
-    ###########################################################################
-    # Labor Capital Intensity
-    ###########################################################################
     YCC = real_fixed_assets * labor[0] / (real_fixed_assets[0] * labor)
-    ###########################################################################
-    # Labor Productivity
-    ###########################################################################
     YDD = real_production * labor[0] / (real_production[0] * labor)
-    ###########################################################################
-    # Log Labor Capital Intensity, LN((K/L)/(K0/L0))
-    ###########################################################################
     YEE = np.log(YCC)
-    ###########################################################################
-    # Log Labor Productivity, LN((Y/L)/(Y0/L0))
-    ###########################################################################
     YFF = np.log(YDD)
-    ###########################################################################
-    # Max: Fixed Assets Turnover Ratio
-    ###########################################################################
     YGG = full_capacity_production / real_fixed_assets
-    ###########################################################################
-    # Max: Investment to Gross Domestic Product Ratio
-    ###########################################################################
     YHH = (
         investment
         * full_capacity_production[0]
         / (investment[0] * full_capacity_production)
     )
-    ###########################################################################
-    # Max: Labor Productivity
-    ###########################################################################
     YII = (
         full_capacity_production
         * labor[0]
         / (full_capacity_production[0] * labor)
     )
-    ###########################################################################
-    # Max: Log Labor Productivity
-    ###########################################################################
     YJJ = np.log(YII)
     YEE = pd.DataFrame(YEE, columns=["YEE"])
     YFF = pd.DataFrame(YFF, columns=["YFF"])
@@ -97,7 +78,8 @@ def run_acquisition_workflow(
             float(
                 input(
                     "Define Gamma for Period from {} to {}: ".format(
-                        period[nodes[i]], period[nodes[i + 1] - 1]
+                        period[nodes[i]],
+                        period[nodes[i + 1] - 1],
                     )
                 )
             )
@@ -110,7 +92,8 @@ def run_acquisition_workflow(
                     float(
                         input(
                             "Define Gamma for Period from {} to {}: ".format(
-                                period[nodes[i]], period[nodes[i + 1] - 1]
+                                period[nodes[i]],
+                                period[nodes[i + 1] - 1],
                             )
                         )
                     )
@@ -119,8 +102,9 @@ def run_acquisition_workflow(
             else:
                 node = int(
                     input(
-                        "Select Row for Year, Should Be More Than %d:=%d: "
-                        % (0, period[0])
+                        "Select Row for Year, Should Be More Than {}: = {}: ".format(
+                            0, period[0]
+                        )
                     )
                 )
                 if node > nodes[i]:
@@ -129,7 +113,8 @@ def run_acquisition_workflow(
                         float(
                             input(
                                 "Define Gamma for Period from {} to {}: ".format(
-                                    period[nodes[i]], period[nodes[i + 1]]
+                                    period[nodes[i]],
+                                    period[nodes[i + 1]],
                                 )
                             )
                         )
@@ -137,24 +122,41 @@ def run_acquisition_workflow(
                     i += 1
     else:
         print("Error")
+    ###########################################################################
+    # Estimate Gross Capital Formation / Capital Acquisitions
+    ###########################################################################
     estimates = [pd.NA]
     for j in range(number_of_segments):
         for i in range(nodes[j], nodes[j + 1]):
-            ###################################################################
             # Estimate: GCF[-] or CA[+]
-            ###################################################################
             estimates.append(
                 real_fixed_assets[i + 1]
                 - real_fixed_assets[i]
                 + gammas[j] * investment[i + 1]
             )
     estimates = pd.DataFrame(estimates, columns=["estimates"])
-    df = pd.DataFrame(period, columns=["year"])
-    df = pd.concat(
-        [df, YAA, YBB, YCC, YDD, YEE, YFF, YGG, YHH, YII, YJJ, estimates],
+    ###########################################################################
+    # Assemble Results
+    ###########################################################################
+    result = pd.DataFrame(period, index=df.index, columns=["year"])
+    result = pd.concat(
+        [
+            result,
+            YAA,
+            YBB,
+            YCC,
+            YDD,
+            YEE,
+            YFF,
+            YGG,
+            YHH,
+            YII,
+            YJJ,
+            estimates,
+        ],
         axis=1,
     )
-    df.columns = [
+    result.columns = [
         "year",
         "YAA",
         "YBB",
@@ -168,7 +170,9 @@ def run_acquisition_workflow(
         "YJJ",
         "estimates",
     ]
-    # {"-": "Gross Capital Formation", "+": "Capital Acquisitions"}
+    ###########################################################################
+    # Print Model Parameters
+    ###########################################################################
     for i in range(number_of_segments):
         end = nodes[i + 1] - 1 if i == number_of_segments - 1 else nodes[i + 1]
         print(
@@ -176,63 +180,79 @@ def run_acquisition_workflow(
             f"{period[nodes[i]]} to {period[end]}: "
             f"{gammas[i]:.6f}"
         )
+    ###########################################################################
+    # Visualization
+    ###########################################################################
     plt.figure(1)
     plt.plot(YCC, YDD)
     plt.plot(YCC, YII)
     plt.title(
-        "Labor Productivity, Observed & Max, %d=100, {}$-${}".format(
+        "Labor Productivity, Observed & Max, {} = 100, {}$-${}".format(
             period[base_year],
             period[nodes[0]],
+            period[nodes[number_of_segments] - 1],
         )
     )
     plt.xlabel("Labor Capital Intensity")
-    plt.ylabel(f"Labor Productivity, {period[base_year]}=100")
+    plt.ylabel("Labor Productivity, {} = 100".format(period[base_year]))
     plt.grid()
     plt.figure(2)
     plt.plot(YEE, YFF)
     plt.plot(YEE, YJJ)
     plt.title(
-        "Log Labor Productivity, Observed & Max, %d=100, {}$-${}".format(
+        "Log Labor Productivity, Observed & Max, {} = 100, {}$-${}".format(
             period[base_year],
             period[nodes[0]],
+            period[nodes[number_of_segments] - 1],
         )
     )
     plt.xlabel("Log Labor Capital Intensity")
-    plt.ylabel(f"Log Labor Productivity, {period[base_year]}=100")
+    plt.ylabel("Log Labor Productivity, {} = 100".format(period[base_year]))
     plt.grid()
     plt.figure(3)
-    plt.plot(YAA)
-    plt.plot(YGG)
+    plt.plot(period, YAA)
+    plt.plot(period, YGG)
     plt.title(
-        "Fixed Assets Turnover, Observed & Max, %d=100, {}$-${}".format(
+        "Fixed Assets Turnover ($\\lambda$), Observed & Max, {} = 100, {}$-${}".format(
             period[base_year],
             period[nodes[0]],
+            period[nodes[number_of_segments] - 1],
         )
     )
     plt.xlabel("year")
-    plt.ylabel(f"Fixed Assets Turnover, {period[base_year]}=100")
+    plt.ylabel(
+        "Fixed Assets Turnover ($\\lambda$), {} = 100".format(
+            period[base_year]
+        )
+    )
     plt.grid()
     plt.figure(4)
-    plt.plot(YBB)
-    plt.plot(YHH)
+    plt.plot(period, YBB)
+    plt.plot(period, YHH)
     plt.title(
-        "Investment to Gross Domestic Product Ratio,\nObserved & Max, %d=100, {}$-${}".format(
+        "Investment to Gross Domestic Product Ratio, \nObserved & Max, {} = 100, {}$-${}".format(
             period[base_year],
             period[nodes[0]],
+            period[nodes[number_of_segments]],
         )
     )
     plt.xlabel("year")
-    plt.ylabel(f"Investment to GDP Ratio, {period[base_year]}=100")
+    plt.ylabel(
+        "Investment to Gross Domestic Product Ratio, {} = 100".format(
+            period[base_year]
+        )
+    )
     plt.grid()
     plt.figure(5)
-    plt.plot(estimates)
+    plt.plot(period, estimates)
     plt.title(
-        "Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), %d=100, {}$-${}".format(
+        "Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), {} = 100, {}$-${}".format(
             period[base_year],
             period[nodes[0]],
+            period[nodes[number_of_segments] - 1],
         )
     )
     plt.xlabel("year")
-    plt.ylabel(f"GCF or CA, {period[base_year]}=100")
+    plt.ylabel("GCF or CA, {} = 100".format(period[base_year]))
     plt.grid()
     plt.show()

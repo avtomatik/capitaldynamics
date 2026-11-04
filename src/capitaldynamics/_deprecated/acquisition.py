@@ -1,6 +1,6 @@
 from capitaldynamics.data.loader import load_data
 
-from .visualization import plot_acquisition
+from .workflow.acquisition import plot_acquisition
 
 COLUMNS = [
     "real_investment",
