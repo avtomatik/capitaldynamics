@@ -1,11 +1,11 @@
 [build-system]
-requires = ["setuptools>=68"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
 
 [project]
 name = "capitaldynamics"
-version = "1.0.0"
-description = "Transparent economic time-series analysis of capital acquisition and fixed-asset retirement."
+version = "0.3.0"
+description = "Reproducible capital acquisition and retirement analysis"
 readme = "README.md"
 requires-python = ">=3.14"
 license = { file = "LICENSE.md" }
@@ -17,20 +17,24 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "ruff>=0.6"]
+dev = [
+    "pytest>=8.0,<10",
+    "ruff>=0.8,<1",
+]
 
 [project.scripts]
-capital = "capital_analysis.cli:main"
+capitaldynamics = "capitaldynamics.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/capitaldynamics"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+addopts = "-q"
 
 [tool.ruff]
-line-length = 100
+line-length = 79
+target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = ["E", "F", "I", "UP"]

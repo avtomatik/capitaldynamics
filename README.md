@@ -1,139 +1,227 @@
-# Capital Analysis
+# Capital Dynamics
 
-A clean-room rewrite of the original `capital_interactive` research experiment. The project analyzes annual economic time series through two related models:
+This is an **overlay/refactor pack** for the files supplied in the project description. It is not a full copy of the repository: the upstream collector and the existing `data/marts.py` implementation were not included in the supplied source. Those parts must remain in the repository and continue producing `raw.observations` and `marts.capital_dynamics_archived`.
 
-- **capital acquisition** — estimates gross capital formation / capital acquisition from changes in the capital stock and a piecewise Gamma conversion parameter;
-- **capital retirement** — estimates fixed-asset retirement value and retirement ratio from changes in the capital stock and the same class of piecewise parameter.
+The pack replaces the analysis entry points and adds explicit preparation, calculation, visualization, and run-persistence layers. It intentionally does not invent a replacement for the absent data-ingestion code.
 
-The original project grew around two large interactive plotting functions. This rewrite deliberately moves the mathematics away from plotting, terminal input, and pandas positional indexing. The resulting model is deterministic, testable, and reusable from a CLI, notebook, or another Python program.
+## Design goals
 
-## Historical model recovered from the Excel/VBA experiment
+- Read observations from DuckDB in read-only mode.
+- Keep the existing raw-observation and mart-building boundary.
+- Validate required columns, years, numeric values, finite values, and denominators before analysis.
+- Keep model calculations deterministic and free of prompts, filesystem access, database access, and plotting.
+- Keep visualization independent of data collection and model calculations.
+- Require Gamma breakpoints explicitly; there are no hidden `input()` prompts.
+- Write each run into a new directory containing `results.csv`, PNG charts, and `manifest.json`.
+- Never overwrite an earlier run. Files are staged and the completed run directory is published with a same-filesystem rename.
+- Return a non-zero exit status on invalid input or failed execution, so a scheduler can detect failures.
 
-The original spreadsheet computes a GDP deflator as:
-
-`D_t = real_gdp_t / nominal_gdp_t`
-
-and constructs:
-
-`real_investment_t = nominal_investment_t * D_t`
-
-`real_capital_t = nominal_capital_t * D_t`
-
-The capacity-utilization-adjusted output used by the acquisition analysis is:
-
-`maximum_output_t = real_gdp_t / capacity_utilization_t`
-
-The acquisition estimate for transition `t -> t+1` is:
-
-`acquisition_t = K_(t+1) - K_t + Gamma_t * I_(t+1)`
-
-The retirement estimate is:
-
-`retirement_value_t = K_t - K_(t+1) + Gamma_t * I_t`
-
-`retirement_ratio_t = retirement_value_t / K_(t+1)`
-
-The Excel experiment also normalizes indicators to a selected **analysis start year**. That is distinct from the GDP price-index **base year**. Both concepts are represented explicitly in the new model.
-
-## Input data
-
-The analysis accepts a canonical table containing:
-
-| Column | Meaning |
-|---|---|
-| `year` | Year |
-| `nominal_gdp` | Nominal GDP |
-| `real_gdp` | Real GDP |
-| `nominal_investment` | Gross private domestic investment |
-| `nominal_capital` | Closing-balance fixed assets |
-| `labor` | Labor series |
-| `capacity_utilization` | FRS manufacturing capacity utilization |
-
-Only `capacity_utilization` is required for the acquisition model.
-
-A canonical CSV example is provided in `examples/capital_data.csv`.
-
-## Scenarios
-
-Model scenarios live in `configs/`. A scenario is explicit data rather than a sequence of `input()` calls:
-
-```yaml
-name: acquisition_4_spans
-analysis_start: 1968
-gamma:
-  - {start: 1968, end: 1981, value: 1.0}
-  - {start: 1982, end: 1991, value: 0.537711622818944}
-  - {start: 1992, end: 2001, value: 0.815869779361117}
-  - {start: 2002, end: 2010, value: 0.956084835528969}
-```
-
-The interval endpoints describe the **target year** on which the acquisition parameter is applied. Thus `1968..1981` means the transitions `1967 -> 1968` through `1980 -> 1981`; this matches the original VBA, whose output row is labeled by the target year. The retirement model uses the source-year convention described below.
-
-## CLI
-
-Install locally with uv or pip. Example with uv:
-
-```bash
-uv sync
-uv run capital acquisition \
-  --input examples/capital_data.csv \
-  --config configs/example_acquisition.yaml \
-  --output results/acquisition.csv
-
-uv run capital retirement \
-  --input examples/capital_data.csv \
-  --config configs/example_retirement.yaml \
-  --output results/retirement.csv
-```
-
-Add `--plot-dir results/plots --show` to create the corresponding figures.
-
-## Python API
-
-```python
-import pandas as pd
-
-from capital_analysis.domain.models import CapitalDataset
-from capital_analysis.domain.schedule import GammaSchedule, GammaSpan
-from capital_analysis.domain.acquisition import calculate_acquisition
-
-raw = pd.read_csv("examples/capital_data.csv")
-data = CapitalDataset.from_frame(raw)
-
-schedule = GammaSchedule((
-    GammaSpan(1968, 1981, 1.0),
-    GammaSpan(1982, 1991, 0.537711622818944),
-    GammaSpan(1992, 2001, 0.815869779361117),
-    GammaSpan(2002, 2010, 0.956084835528969),
-))
-
-result = calculate_acquisition(data, analysis_start=1968, gamma=schedule)
-print(result.table())
-```
-
-## Repository structure
+## Architecture
 
 ```text
-src/capital_analysis/
-├── domain/          pure mathematical model and value objects
-├── data/            input adapters and source metadata
-├── application/    scenario orchestration
-├── visualization/  plotting only
-└── cli.py           thin command-line adapter
+capitaldynamics/
+├── analysis/
+│   ├── acquisition.py       # pure acquisition calculations
+│   ├── retirement.py        # pure retirement calculations
+│   └── segmentation.py      # validated piecewise Gamma schedule
+├── config/
+│   └── paths.py             # paths only; no directory creation on import
+├── data/
+│   └── loader.py            # read-only DuckDB adapter
+├── preparation/
+│   └── datasets.py          # source-data contracts and validation
+├── visualization/
+│   ├── common.py
+│   ├── acquisition.py       # five acquisition figures
+│   └── retirement.py        # seven retirement figures
+├── workflow/
+│   ├── common.py            # run artifacts and atomic publication
+│   ├── acquisition.py       # acquisition use-case orchestration
+│   └── retirement.py        # retirement use-case orchestration
+├── cli.py                   # command-line interface
+├── acquisition.py           # compatibility command entry point
+├── retirement.py            # compatibility command entry point
+└── __main__.py
 ```
 
-The `domain` package has no dependency on matplotlib and does not read from stdin.
+The existing `capitaldynamics/data/marts.py` remains the mart compiler and definition registry. It is deliberately not replaced by this pack.
 
-## Tests
+## Data contract
+
+The semantic relation `marts.capital_dynamics_archived` must expose these columns:
+
+| Column | Acquisition | Retirement |
+|---|:---:|:---:|
+| `year` | Yes | Yes |
+| `real_investment` | Yes | Yes |
+| `nominal_gdp` | Yes | Yes |
+| `real_gdp` | Yes | Yes |
+| `full_capacity_real_gdp` | Yes | No |
+| `real_fixed_assets` | Yes | Yes |
+| `manufacturing_labor` | Yes | Yes |
+
+The relation must contain one row per year, in increasing year order, with at least two observations. Required numeric series must be finite. GDP, fixed assets, and labor must be positive. Initial real investment must be non-zero because the investment/output indices are normalised to the first analysis observation.
+
+The deflator reference year is the latest year for which:
+
+```text
+abs(nominal_gdp - real_gdp) <= 1.0
+```
+
+This retains the historical absolute-difference convention. Unlike the old unbounded backwards loop, the preparation layer fails with a clear error if no such year exists.
+
+## Gamma schedule semantics
+
+Gamma values are supplied as **source-year breakpoints**. A value becomes active for the transition beginning in its specified year.
+
+For example:
+
+```text
+--gamma 1947=0.90 --gamma 1970=1.05 --gamma 1995=0.98
+```
+
+means:
+
+- Gamma 0.90 applies to transitions whose source year is 1947–1969.
+- Gamma 1.05 applies to transitions whose source year is 1970–1994.
+- Gamma 0.98 applies from source year 1995 to the final transition.
+
+The first breakpoint must equal the first year included in the analysis. Every breakpoint must be an observed year with a following observation. Breakpoints must be strictly increasing. This removes the old ambiguity between worksheet row numbers, zero-based Python positions, and calendar years.
+
+## Model equations and compatibility notes
+
+### Acquisition
+
+The static indicators retain the current Python implementation:
+
+- `YAA`: observed output / real fixed assets.
+- `YBB`: investment-to-output ratio, normalised to the first observation.
+- `YCC`: labour capital intensity index.
+- `YDD`: observed labour productivity index.
+- `YEE`: log labour capital intensity index.
+- `YFF`: log observed labour productivity index.
+- `YGG`: full-capacity output / real fixed assets.
+- `YHH`: full-capacity investment-to-output index.
+- `YII`: full-capacity labour productivity index.
+- `YJJ`: log full-capacity labour productivity index.
+
+The dynamic estimate retains the current Python equation:
+
+```text
+estimate[t] = K[t] - K[t-1] + Gamma[source_year] * I[t]
+```
+
+The first observation has no preceding transition, so its estimate is null.
+
+### Retirement
+
+The static indicators retain the current Python implementation:
+
+- `YAA`: log labour capital intensity index.
+- `YBB`: log labour productivity index.
+- `YCC`: investment-to-output index.
+- `YDD`: fixed-assets turnover.
+- `YEE`: estimated retirement value.
+- `YFF`: estimated retirement value / end-period capital.
+- `YGG`: absolute deviation of the retirement ratio from its sample mean.
+- `YHH`: absolute period-to-period change in the retirement ratio.
+
+The existing Python dynamic equation is retained explicitly:
+
+```text
+retirement_value[t+1] = K[t] - K[t+1] + Gamma[t] * I[t]
+retirement_ratio[t+1] = retirement_value[t+1] / K[t+1]
+```
+
+**This is not equivalent to the legacy VBA retirement equation**, which uses `K[t+1] - K[t] + Gamma[t] * I[t+1]`. The legacy VBA retirement procedure also uses a user-selected starting year and calculates full-capacity output indicators that the current Python retirement workflow does not expose. The pack adds `--start-year` but does not silently change these model definitions.
+
+Before treating the retirement output as a validated continuation of the historical workbook, the owner of the economic model should choose and document which equation is authoritative. The current equation is tagged as `current-python-retirement-v1` in the run manifest so outputs remain traceable.
+
+## Installation and integration
+
+1. Back up or commit the current repository.
+2. Copy the contents of this pack's `src/capitaldynamics/` into the existing `src/capitaldynamics/` package, replacing the corresponding analysis entry points and adding the new subpackages.
+3. **Keep the existing** `src/capitaldynamics/data/marts.py` from the repository. The CLI's `build-marts` command expects it to provide `build_marts(warehouse=...)`.
+4. Merge the dependency and project-script entries from `pyproject.toml` into the repository's actual project configuration. Do not replace project metadata or unrelated development tooling blindly.
+5. From the repository root, install dependencies and the package. For example, with uv:
+
+   ```bash
+   uv sync --extra dev
+   ```
+
+6. Run the tests:
+
+   ```bash
+   uv run pytest
+   ```
+
+7. Build marts using the existing source observations:
+
+   ```bash
+   uv run capitaldynamics build-marts
+   ```
+
+8. Verify the semantic dataset:
+
+   ```bash
+   uv run capitaldynamics inspect
+   ```
+
+The pack assumes that the existing upstream ingestion step has already populated `raw.observations`. It does not schedule or initiate collection.
+
+## Running analyses
+
+Acquisition:
 
 ```bash
-uv run pytest
+uv run capitaldynamics acquisition \
+  --gamma 1947=0.90 \
+  --gamma 1970=1.05
 ```
 
-## Data provenance
+Retirement:
 
-The original experiment used BEA NIPA data, BEA fixed-assets data, and Federal Reserve capacity-utilization data. Series identifiers from the original project are preserved in `src/capital_analysis/data/sources.py`. The rewrite intentionally separates those source identifiers from the analytical model.
+```bash
+uv run capitaldynamics retirement \
+  --start-year 1947 \
+  --gamma 1947=0.90 \
+  --gamma 1970=1.05
+```
 
-## Historical scenarios
+Both commands are non-interactive. By default, each run is written under:
 
-`configs/acquisition_4_spans.yaml` and the retirement scenarios reproduce the parameter schedules recovered from the original Excel experiment. They expect a source dataset covering the years named by the scenario. The checked-in example dataset is intentionally small and self-contained for smoke testing.
+```text
+data/outputs/<analysis>/<UTC timestamp>/
+├── results.csv
+├── manifest.json
+└── *.png
+```
+
+An explicit `--output-dir` can be supplied, but it must not already exist. This prevents an accidental rerun from overwriting prior output. `--show` is optional for desktop use and should be omitted in scheduled/headless execution.
+
+The same commands can be invoked as modules:
+
+```bash
+uv run python -m capitaldynamics acquisition --gamma 1947=0.90
+uv run python -m capitaldynamics retirement --start-year 1947 --gamma 1947=0.90
+```
+
+## Unattended operation
+
+For a scheduled job:
+
+- Supply the Gamma schedule explicitly in the scheduler's command or a version-controlled deployment wrapper.
+- Use an absolute warehouse path when the scheduler's working directory is not the repository root.
+- Omit `--show`.
+- Treat a non-zero exit status as a failed run and alert on it.
+- Preserve the run directory and manifest as the reproducibility record.
+- Back up the DuckDB warehouse and monitor available disk space.
+- Pin exact dependency versions in the deployment lockfile (`uv.lock`) and commit that lockfile. This pack intentionally does not invent a lockfile without resolving against the actual target platform.
+- Schedule ingestion/mart construction before analysis, with explicit failure handling between steps. Do not run analysis against a partially refreshed source dataset.
+- If two invocations may start concurrently, use a scheduler-level single-instance policy. Timestamped run directories prevent ordinary overwrite, but do not replace orchestration-level concurrency control.
+
+There is no automatic retention deletion. This is deliberate: a scheduled analysis should not silently remove historical results. Establish a documented backup and retention policy outside the calculation package.
+
+## What is intentionally not included
+
+The supplied files did not show the upstream BEA/data collection code, its API configuration, retry policy, or any project-specific deployment configuration. This pack therefore does not modify those components. The existing mart compiler is also retained as-is. A full repository-level hardening pass should inspect those files and the actual `pyproject.toml`, lockfile, tests, and scheduler/deployment setup before declaring the whole project unattended-ready.

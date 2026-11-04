@@ -1,27 +1,8 @@
-from capitaldynamics.data.loader import load_data
-from capitaldynamics.workflow.retirement import analyze_capital_retirement
+"""Compatibility entry point: ``python -m capitaldynamics.retirement``."""
 
-COLUMNS = [
-    "real_investment",
-    "nominal_gdp",
-    "real_gdp",
-    "real_fixed_assets",
-    "manufacturing_labor",
-]
+import sys
 
-COLUMNS = [
-    "real_investment",
-    "full_capacity_nominal_gdp",
-    "full_capacity_real_gdp",
-    "real_fixed_assets",
-    "manufacturing_labor",
-]
-
-
-def main() -> None:
-    data = load_data()
-    data.loc[:, COLUMNS].pipe(analyze_capital_retirement)
-
+from capitaldynamics.cli import main
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main(["retirement", *sys.argv[1:]]))

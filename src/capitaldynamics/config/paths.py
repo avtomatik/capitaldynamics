@@ -1,4 +1,6 @@
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[3]
-WAREHOUSE = BASE_DIR / "data" / "warehouse" / "observations.duckdb"
+DATA_DIR = BASE_DIR / "data"
+WAREHOUSE = DATA_DIR / "warehouse" / "observations.duckdb"
+OUTPUTS_DIR = DATA_DIR / "outputs"
